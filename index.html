@@ -20,19 +20,11 @@
             background-color: #f3f4f6;
         }
         .printable-area {
-            display: none;
-        }
-        @media print {
-            body > *:not(.printable-area) {
-                display: none !important;
-            }
-            .printable-area {
-                display: block;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-            }
+            position: absolute;
+            left: -9999px; /* Position off-screen */
+            top: auto;
+            width: 8.5in; /* Standard paper width */
+            height: auto;
         }
     </style>
 </head>
@@ -64,13 +56,14 @@
 
         const Card = ({ children, className }) => <div className={`bg-white rounded-xl shadow-sm p-6 mb-6 ${className}`}>{children}</div>;
         
-        const Button = ({ children, onClick, variant = 'primary', className = '', type = 'button' }) => {
+        const Button = ({ children, onClick, variant = 'primary', className = '', type = 'button', disabled = false }) => {
             const baseClasses = "inline-flex items-center justify-center px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2";
             const variants = {
                 primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
                 secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400",
             };
-            return <button type={type} onClick={onClick} className={`${baseClasses} ${variants[variant]} ${className}`}>{children}</button>;
+            const disabledClasses = "opacity-50 cursor-not-allowed";
+            return <button type={type} onClick={onClick} disabled={disabled} className={`${baseClasses} ${variants[variant]} ${disabled ? disabledClasses : ''} ${className}`}>{children}</button>;
         };
 
         const InputField = ({ label, ...props }) => (
@@ -300,7 +293,7 @@
             );
         };
 
-        const ProposalDisplay = ({ packages, onPrint }) => {
+        const ProposalDisplay = ({ packages, onPrint, isGeneratingPdf }) => {
             if (packages.length === 0) return null;
             return (
                 <div id="proposalSection">
@@ -333,7 +326,9 @@
                                         </div>
                                     </div>
                                     <div className="mt-6">
-                                        <Button onClick={() => onPrint(pkg)} className="w-full"><Icon name="printer" className="mr-2 h-4 w-4" />Download PDF</Button>
+                                        <Button onClick={() => onPrint(pkg)} disabled={isGeneratingPdf} className="w-full">
+                                            {isGeneratingPdf ? 'Generating...' : <><Icon name="printer" className="mr-2 h-4 w-4" />Download PDF</>}
+                                        </Button>
                                     </div>
                                 </div>
                             ))}
@@ -423,42 +418,33 @@
 
             useEffect(() => {
                 if (packageToPrint && printableRef.current) {
+                    setIsGeneratingPdf(true);
                     const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF({
-                        orientation: 'p',
-                        unit: 'px',
-                        format: 'a4',
-                        putOnlyUsedFonts:true
-                    });
+                    const elementToPrint = printableRef.current;
                     
-                    html2canvas(printableRef.current, { scale: 2 }).then(canvas => {
-                        const imgData = canvas.toDataURL('image/png');
-                        const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = pdf.internal.pageSize.getHeight();
-                        const canvasWidth = canvas.width;
-                        const canvasHeight = canvas.height;
-                        const ratio = canvasWidth / canvasHeight;
-                        const imgHeight = pdfWidth / ratio;
-                        
-                        let heightLeft = canvasHeight;
-                        let position = 0;
-
-                        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight * pdfWidth / canvasWidth);
-                        heightLeft -= pdf.internal.pageSize.getHeight();
-
-                        while (heightLeft > 0) {
-                            position = heightLeft - canvasHeight; 
-                            pdf.addPage();
-                            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight * pdfWidth / canvasWidth);
-                            heightLeft -= pdf.internal.pageSize.getHeight();
-                        }
-                        
-                        pdf.save(`Proposal-${details.customerName || 'Customer'}.pdf`);
-                        setPackageToPrint(null);
-                        setIsGeneratingPdf(false);
-                    });
+                    html2canvas(elementToPrint, { scale: 2, useCORS: true })
+                        .then(canvas => {
+                            const imgData = canvas.toDataURL('image/png');
+                            const pdf = new jsPDF({
+                                orientation: 'p',
+                                unit: 'px',
+                                format: [canvas.width, canvas.height]
+                            });
+                            const pdfWidth = pdf.internal.pageSize.getWidth();
+                            const pdfHeight = pdf.internal.pageSize.getHeight();
+                            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                            pdf.save(`Proposal-${details.customerName || 'Customer'}.pdf`);
+                            setPackageToPrint(null);
+                            setIsGeneratingPdf(false);
+                        })
+                        .catch(err => {
+                            console.error("Error generating PDF:", err);
+                            alert("Could not generate PDF. Please try again.");
+                            setIsGeneratingPdf(false);
+                            setPackageToPrint(null);
+                        });
                 }
-            }, [packageToPrint, details.customerName]);
+            }, [packageToPrint]);
 
 
             const equipmentData = {
@@ -646,7 +632,6 @@
             };
 
             const handlePrint = (pkg) => {
-                setIsGeneratingPdf(true);
                 setPackageToPrint(pkg);
             };
 
@@ -688,7 +673,7 @@
                                 <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span> Generate Proposal</h2>
                                 <Button onClick={handleGeneratePackages} className="btn-lg"><Icon name="settings" className="mr-2 h-5 w-5" />Build System Options</Button>
                             </Card>
-                            <ProposalDisplay packages={packages} onPrint={handlePrint} />
+                            <ProposalDisplay packages={packages} onPrint={handlePrint} isGeneratingPdf={isGeneratingPdf} />
                         </main>
                         <div className="printable-area">
                             <PrintableProposal pkg={packageToPrint} details={details} ref={printableRef} />
