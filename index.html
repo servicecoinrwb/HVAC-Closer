@@ -206,6 +206,50 @@
             );
         };
 
+        const Rebates = ({ rebates, setDetails }) => {
+            const [name, setName] = useState('');
+            const [amount, setAmount] = useState('');
+
+            const handleAddRebate = () => {
+                if (name && amount) {
+                    setDetails(prev => ({...prev, rebates: [...prev.rebates, {id: Date.now(), name, amount: parseFloat(amount)}]}));
+                    setName('');
+                    setAmount('');
+                }
+            };
+
+            const handleRemoveRebate = (id) => {
+                setDetails(prev => ({...prev, rebates: prev.rebates.filter(r => r.id !== id)}));
+            };
+
+            return (
+                <Card>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span> Rebates & Promotions
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <InputField value={name} onChange={e => setName(e.target.value)} placeholder="Rebate Name (e.g., Utility Rebate)" />
+                        <InputField type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount ($)" />
+                        <Button onClick={handleAddRebate}><Icon name="plus" className="mr-2 h-4 w-4" /> Add Rebate</Button>
+                    </div>
+                    {rebates.length > 0 && (
+                        <div className="space-y-2 mt-4 border-t pt-4">
+                            {rebates.map(rebate => (
+                                <div key={rebate.id} className="flex justify-between items-center bg-gray-50 p-2 rounded-md">
+                                    <span className="text-gray-700">{rebate.name}</span>
+                                    <div className="flex items-center gap-4">
+                                        <span className="font-bold text-green-600">-${parseFloat(rebate.amount).toFixed(2)}</span>
+                                        <Button onClick={() => handleRemoveRebate(rebate.id)} variant="secondary" className="bg-red-100 text-red-600 hover:bg-red-200 !p-2 h-8 w-8"><Icon name="trash" /></Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </Card>
+            );
+        };
+
+
         const PhotoUploader = ({ photos, setDetails }) => {
             const handlePhotoChange = (event) => {
                 const files = Array.from(event.target.files);
@@ -227,7 +271,7 @@
             return (
                 <Card>
                      <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span> Job Site Photos
+                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span> Job Site Photos
                     </h2>
                     <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
                         <div className="text-center">
@@ -291,7 +335,7 @@
 
             return (
                 <Card>
-                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span> Manual J Load Calculator</h2>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span> Manual J Load Calculator</h2>
                     <div className="flex border-b mb-4">
                         <button onClick={() => setMode('quick')} className={`tab ${mode === 'quick' ? 'active' : ''}`}>Quick Mode</button>
                         <button onClick={() => setMode('full')} className={`tab ${mode === 'full' ? 'active' : ''}`}>Full Mode</button>
@@ -382,7 +426,7 @@
 
             return (
                  <Card>
-                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span> Ductwork CFM Calculator</h2>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span> Ductwork CFM Calculator</h2>
                     <div className="space-y-4">
                         {ducts.map((duct, index) => (
                             <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center bg-gray-50 p-2 rounded-md">
@@ -423,23 +467,24 @@
         };
 
 
-        const ProposalDisplay = ({ packages, onPrint, isGeneratingPdf }) => {
+        const ProposalDisplay = ({ packages, onSelect, selectedPackage, isGeneratingPdf }) => {
             if (packages.length === 0) return null;
             return (
                 <div id="proposalSection">
                     <Card>
-                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span> Your Custom Proposal</h2>
-                        <p className="text-gray-600 mb-6">Here are three tailored options. Select one to generate a printable quote.</p>
+                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">8</span> Your Custom Proposal</h2>
+                        <p className="text-gray-600 mb-6">Here are three tailored options. Please select one to proceed to the signature and download.</p>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {packages.map((pkg, index) => (
-                                <div key={pkg.title + index} className={`card proposal-card ${pkg.level.toLowerCase()} border-2 rounded-lg flex flex-col`}>
+                                <div key={pkg.title + index} className={`card proposal-card ${selectedPackage && selectedPackage.title === pkg.title ? 'border-blue-600' : 'border-gray-200'} border-2 rounded-lg flex flex-col`}>
                                     <div className="proposal-card-content flex-grow">
                                         <div className="text-center">
                                             <span className={`tag bg-${pkg.color}-100 text-${pkg.color}-700`}>{pkg.level}</span>
                                             <h3 className="text-2xl font-bold text-gray-800 mt-3">{pkg.title}</h3>
                                             <div className="my-6">
-                                                <span className="text-4xl font-extrabold text-gray-900">${pkg.finalPrice.toFixed(2)}</span>
-                                                <span className="text-gray-500"> / installed</span>
+                                                <p className="text-sm text-gray-500">Total Investment</p>
+                                                <span className="text-4xl font-extrabold text-gray-900">${pkg.netPrice.toFixed(2)}</span>
+                                                {pkg.totalRebates > 0 && <p className="text-sm text-green-600 font-semibold">After ${pkg.totalRebates.toFixed(2)} in rebates!</p>}
                                             </div>
                                         </div>
                                         <div className="mb-6">
@@ -456,8 +501,8 @@
                                         </div>
                                     </div>
                                     <div className="mt-6">
-                                        <Button onClick={() => onPrint(pkg)} disabled={isGeneratingPdf} className="w-full">
-                                            {isGeneratingPdf ? 'Generating...' : <><Icon name="printer" className="mr-2 h-4 w-4" />Download PDF</>}
+                                        <Button onClick={() => onSelect(pkg)} disabled={isGeneratingPdf} className="w-full">
+                                            {selectedPackage && selectedPackage.title === pkg.title ? 'Selected' : 'Select This Option'}
                                         </Button>
                                     </div>
                                 </div>
@@ -484,12 +529,12 @@
             return (
                 <Card>
                     <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span> On-Screen Financing Calculator
+                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">9</span> On-Screen Financing Calculator
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                         <SelectField label="Select a Package to Calculate" onChange={e => setSelectedPackage(packages[e.target.value])} options={[
                             {value: '', label: 'Select a package...'},
-                            ...packages.map((p, i) => ({value: i, label: `${p.title} - $${p.finalPrice.toFixed(2)}`}))
+                            ...packages.map((p, i) => ({value: i, label: `${p.title} - $${p.netPrice.toFixed(2)}`}))
                         ]}/>
                          {selectedPackage && (
                             <div className="mt-4 md:mt-0">
@@ -498,7 +543,7 @@
                                     {[3, 5, 7, 10].map(term => (
                                         <div key={term} className="bg-gray-100 p-2 rounded-md">
                                             <p className="text-sm font-bold">{term} Years</p>
-                                            <p className="text-lg text-blue-600 font-semibold">${calculatePayment(selectedPackage.finalPrice, term)}</p>
+                                            <p className="text-lg text-blue-600 font-semibold">${calculatePayment(selectedPackage.netPrice, term)}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -510,7 +555,7 @@
         };
 
 
-        const PrintableProposal = forwardRef(({ pkg, details }, ref) => {
+        const PrintableProposal = forwardRef(({ pkg, details, signatureDataUrl }, ref) => {
             if (!pkg) return null;
             const today = new Date().toLocaleDateString();
             
@@ -548,10 +593,17 @@
                     </div>
                     <div className="bg-gray-50 rounded-lg p-6 mb-8">
                         <h3 className="text-lg font-bold text-gray-800 mb-2">{pkg.title} System</h3>
-                        <p className="text-gray-600 mb-4">A summary of the selected comfort system and investment.</p>
                         <div className="text-right">
-                            <p className="text-sm text-gray-500">Total Investment</p>
-                            <p className="text-4xl font-extrabold text-gray-900">${pkg.finalPrice.toFixed(2)}</p>
+                            <p className="text-sm text-gray-500">Subtotal</p>
+                            <p className="text-lg text-gray-700">${pkg.subtotal.toFixed(2)}</p>
+                             {pkg.totalRebates > 0 && (
+                                <>
+                                 <p className="text-sm text-gray-500 mt-1">Rebates & Promotions</p>
+                                 <p className="text-lg text-green-600 font-semibold">-${pkg.totalRebates.toFixed(2)}</p>
+                                </>
+                            )}
+                            <p className="text-sm text-gray-500 mt-2">Net Investment</p>
+                            <p className="text-4xl font-extrabold text-gray-900">${pkg.netPrice.toFixed(2)}</p>
                         </div>
                     </div>
                     <div className="mb-10">
@@ -578,7 +630,7 @@
                                     {[3, 5, 7, 10].map(term => (
                                         <tr key={term} className="border-b">
                                             <td className="p-2">{term} Years</td>
-                                            <td className="p-2 text-right font-bold">${calculateMonthlyPayment(pkg.finalPrice, term)}</td>
+                                            <td className="p-2 text-right font-bold">${calculateMonthlyPayment(pkg.netPrice, term)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -601,7 +653,24 @@
                             </div>
                         </div>
                     )}
-                    <footer className="text-center text-xs text-gray-400 pt-6 border-t">
+                     <div className="mt-12 pt-8 border-t">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Customer Acceptance</h3>
+                        <div className="grid grid-cols-2 gap-8 items-end">
+                            <div>
+                                {signatureDataUrl ? (
+                                    <img src={signatureDataUrl} alt="Customer Signature" className="h-24 border-b border-gray-400" />
+                                ) : (
+                                    <div className="h-24 border-b border-gray-400"></div>
+                                )}
+                                <p className="text-sm text-gray-600">Customer Signature</p>
+                            </div>
+                            <div className="text-right">
+                                <div className="h-24 border-b border-gray-400"></div>
+                                <p className="text-sm text-gray-600">Date</p>
+                            </div>
+                        </div>
+                    </div>
+                    <footer className="text-center text-xs text-gray-400 pt-6 mt-10 border-t">
                         <p>Thank you for the opportunity to earn your business. This proposal is valid for 30 days.</p>
                         <p>Powered by Service Coin</p>
                     </footer>
@@ -609,16 +678,93 @@
             );
         });
 
+        const SignaturePad = ({ onSave, selectedPackage, isGeneratingPdf }) => {
+            const canvasRef = useRef(null);
+            const [isDrawing, setIsDrawing] = useState(false);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+            }, []);
+
+            const startDrawing = ({ nativeEvent }) => {
+                const { offsetX, offsetY } = nativeEvent;
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.beginPath();
+                ctx.moveTo(offsetX, offsetY);
+                setIsDrawing(true);
+            };
+
+            const draw = ({ nativeEvent }) => {
+                if (!isDrawing) return;
+                const { offsetX, offsetY } = nativeEvent;
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.lineTo(offsetX, offsetY);
+                ctx.stroke();
+            };
+
+            const stopDrawing = () => {
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.closePath();
+                setIsDrawing(false);
+            };
+            
+            const clearCanvas = () => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            };
+            
+            const handleSave = () => {
+                if (!selectedPackage) {
+                    alert("Please select a proposal option before signing.");
+                    return;
+                }
+                onSave(selectedPackage, canvasRef.current.toDataURL('image/png'));
+            };
+
+            return (
+                <Card>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">9</span> Sign & Accept
+                    </h2>
+                    <p className="text-gray-600 mb-4">Please sign below to accept the selected proposal.</p>
+                    <canvas 
+                        ref={canvasRef}
+                        width="800"
+                        height="200"
+                        onMouseDown={startDrawing}
+                        onMouseMove={draw}
+                        onMouseUp={stopDrawing}
+                        onMouseLeave={stopDrawing}
+                        className="border border-gray-400 rounded-md w-full h-48 bg-white"
+                    />
+                    <div className="mt-4 flex justify-end gap-4">
+                        <Button onClick={clearCanvas} variant="secondary">Clear</Button>
+                        <Button onClick={handleSave} disabled={!selectedPackage || isGeneratingPdf}>
+                           {isGeneratingPdf ? 'Generating...' : 'Accept & Generate PDF'}
+                        </Button>
+                    </div>
+                </Card>
+            );
+        };
+
+
         // --- Main App Component ---
         function App() {
             const [details, setDetails] = useState({
                 customerName: '', customerAddress: '', email: '', phone: '', jobType: 'furnace_ac', systemSize: '',
                 laborHours: '8', miscMaterials: '450', priorities: [],
-                addons: [], accessDifficulty: '1', notes: '', photos: [], includeFinancing: true
+                addons: [], accessDifficulty: '1', notes: '', photos: [], includeFinancing: true, rebates: []
             });
             const [packages, setPackages] = useState([]);
+            const [selectedPackage, setSelectedPackage] = useState(null);
             const [packageToPrint, setPackageToPrint] = useState(null);
             const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+            const [signatureDataUrl, setSignatureDataUrl] = useState(null);
             const printableRef = useRef();
 
             useEffect(() => {
@@ -649,9 +795,9 @@
                                 setIsGeneratingPdf(false);
                                 setPackageToPrint(null);
                             });
-                    }, 200);
+                    }, 500);
                 }
-            }, [packageToPrint]);
+            }, [packageToPrint, signatureDataUrl]);
 
 
             const equipmentData = {
@@ -894,16 +1040,19 @@
                     const addonsTotal = uniqueAddonKeys.reduce((sum, key) => sum + equipmentData.accessories[key].price, 0);
                     const uniqueAddonItems = uniqueAddonKeys.map(key => equipmentData.accessories[key]);
 
-                    const finalPrice = equipmentTotal + laborTotal + miscTotal + addonsTotal;
+                    const subtotal = equipmentTotal + laborTotal + miscTotal + addonsTotal;
+                    const totalRebates = details.rebates.reduce((sum, r) => sum + r.amount, 0);
+                    const netPrice = subtotal - totalRebates;
                     const finalItems = [...pkg.items, ...uniqueAddonItems];
 
-                    return { ...pkg, finalPrice, items: finalItems };
+                    return { ...pkg, subtotal, totalRebates, netPrice, items: finalItems };
                 });
 
                 setPackages(calculatedPackages);
             };
 
-            const handlePrint = (pkg) => {
+            const handlePrint = (pkg, signature) => {
+                setSignatureDataUrl(signature);
                 setPackageToPrint(pkg);
             };
 
@@ -917,10 +1066,11 @@
                 setDetails({
                     customerName: '', customerAddress: '', email: '', phone: '', jobType: 'furnace_ac', systemSize: '',
                     laborHours: '8', miscMaterials: '450', priorities: [], addons: [], 
-                    accessDifficulty: '1', notes: '', photos: [], includeFinancing: true
+                    accessDifficulty: '1', notes: '', photos: [], includeFinancing: true, rebates: []
                 });
                 setPackages([]);
                 setPackageToPrint(null);
+                setSignatureDataUrl(null);
             };
 
             return (
@@ -939,18 +1089,20 @@
                         <main id="main-content" className="no-print">
                             <JobDetails details={details} setDetails={setDetails} />
                             <Addons selectedAddons={details.addons} onAddonToggle={handleAddonToggle} addonsData={equipmentData.accessories} />
+                            <Rebates rebates={details.rebates} setDetails={setDetails} />
                             <PhotoUploader photos={details.photos} setDetails={setDetails} />
                             <ManualJCalculator onTonnageCalculated={handleTonnageCalculated} />
                             <DuctworkCalculator details={details} setDetails={setDetails} />
                             <Card className="text-center">
-                                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span> Generate Proposal</h2>
+                                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span> Generate Proposal</h2>
                                 <Button onClick={handleGeneratePackages} className="btn-lg"><Icon name="settings" className="mr-2 h-5 w-5" />Build System Options</Button>
                             </Card>
-                            <ProposalDisplay packages={packages} onPrint={handlePrint} isGeneratingPdf={isGeneratingPdf} />
+                            <ProposalDisplay packages={packages} onSelect={setSelectedPackage} selectedPackage={selectedPackage} isGeneratingPdf={isGeneratingPdf} />
                             {details.includeFinancing && packages.length > 0 && <FinancingCalculator packages={packages} />}
+                            {packages.length > 0 && <SignaturePad onSave={handlePrint} selectedPackage={selectedPackage} isGeneratingPdf={isGeneratingPdf} />}
                         </main>
                         <div className="printable-area">
-                            <PrintableProposal pkg={packageToPrint} details={details} ref={printableRef} />
+                            <PrintableProposal pkg={packageToPrint} details={details} signatureDataUrl={signatureDataUrl} ref={printableRef} />
                         </div>
                         <footer className="text-center text-gray-500 text-sm py-8 no-print">
                             Powered by Service Coin
