@@ -460,6 +460,15 @@
         const PrintableProposal = forwardRef(({ pkg, details }, ref) => {
             if (!pkg) return null;
             const today = new Date().toLocaleDateString();
+            
+            const calculateMonthlyPayment = (price, termYears) => {
+                const interestRate = 0.0999;
+                const monthlyRate = interestRate / 12;
+                const numberOfPayments = termYears * 12;
+                const monthlyPayment = price * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+                return monthlyPayment.toFixed(2);
+            };
+
             return (
                 <div ref={ref} className="p-8 bg-white max-w-4xl mx-auto font-sans">
                     <header className="flex justify-between items-start mb-10">
@@ -500,6 +509,26 @@
                             <li>Removal and responsible disposal of existing equipment.</li>
                             <li>System testing and commissioning to ensure proper operation.</li>
                         </ul>
+                    </div>
+                    <div className="mb-10">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Financing Options</h3>
+                        <p className="text-gray-600 mb-4">Estimated monthly payments based on an APR of 9.99%. Subject to credit approval.</p>
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="p-2">Term</th>
+                                    <th className="p-2 text-right">Monthly Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[3, 5, 7, 10].map(term => (
+                                    <tr key={term} className="border-b">
+                                        <td className="p-2">{term} Years</td>
+                                        <td className="p-2 text-right font-bold">${calculateMonthlyPayment(pkg.finalPrice, term)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                     {details.notes && (
                          <div className="mb-10">
