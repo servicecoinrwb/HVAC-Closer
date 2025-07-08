@@ -1,153 +1,709 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HVAC Sales Tool</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.292.0/lucide.min.js"></script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f3f4f6;
-    }
-    .tab-active {
-      border-b-2 border-blue-600 text-blue-600 font-semibold;
-    }
-    .tab-inactive {
-      text-gray-500 hover:text-blue-600;
-    }
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #printableProposal, #printableProposal * {
-        visibility: visible;
-      }
-      #printableProposal {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        padding: 2rem;
-        background-color: white;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HVAC Sales Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.292.0/lucide.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+        .proposal-card {
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        .proposal-card-content {
+            flex-grow: 1;
+        }
+        .proposal-card.best {
+            border-color: #2563eb;
+            box-shadow: 0 10px 15px -3px rgb(37 99 235 / 0.2), 0 4px 6px -4px rgb(37 99 235 / 0.2);
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        #printableProposal {
+            display: none;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printableProposal, #printableProposal * {
+                visibility: visible;
+            }
+            #printableProposal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body class="p-4 md:p-8">
-  <div id="app" class="max-w-7xl mx-auto">
-    <header class="flex items-center justify-between mb-8">
-      <div class="flex items-center gap-3">
-        <div class="bg-blue-600 p-3 rounded-lg text-white">
-          <i data-lucide="wind"></i>
-        </div>
-        <div>
-          <h1 class="text-2xl font-bold text-gray-800">HVAC Sales Tool</h1>
-          <p class="text-gray-500">Streamline your sales process.</p>
-        </div>
-      </div>
-      <button id="resetBtn" class="inline-flex items-center px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-md">
-        <i data-lucide="rotate-cw" class="mr-2 h-4 w-4"></i> Reset
-      </button>
-    </header>
 
-    <main class="space-y-6">
-      <section class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-xl font-semibold mb-4">Manual J Load Calculator</h2>
-        <div class="flex space-x-2 border-b pb-2">
-          <button class="tab-btn px-4 py-2" data-tab="quick">Quick Mode</button>
-          <button class="tab-btn px-4 py-2" data-tab="full">Full Mode</button>
-        </div>
+    <div id="app" class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex items-center justify-between mb-8 no-print">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-3 rounded-lg text-white">
+                    <i data-lucide="wind"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">HVAC Sales Tool</h1>
+                    <p class="text-gray-500">Streamline your sales process.</p>
+                </div>
+            </div>
+            <button id="resetBtn" class="btn btn-secondary">
+                <i data-lucide="rotate-cw" class="mr-2 h-4 w-4"></i>
+                Start New Proposal
+            </button>
+        </header>
 
-        <div class="tab-panel mt-4 space-y-4" data-tab="quick">
-          <input type="text" id="quickZip" placeholder="ZIP Code" class="w-full border p-2 rounded-md" />
-          <input type="number" id="quickSqft" placeholder="Square Footage" class="w-full border p-2 rounded-md" />
-          <select id="quickInsulation" class="w-full border p-2 rounded-md">
-            <option value="average">Average Insulation</option>
-            <option value="poor">Poor Insulation</option>
-            <option value="good">Good Insulation</option>
-          </select>
-        </div>
+        <!-- Main Content -->
+        <main id="main-content" class="no-print">
+            <!-- Step 1: Customer & Home Info -->
+            <div class="card">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span> Job Details</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label for="customerName" class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                        <input type="text" id="customerName" class="input-field" placeholder="e.g., John Doe">
+                    </div>
+                    <div>
+                        <label for="customerAddress" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <input type="text" id="customerAddress" class="input-field" placeholder="e.g., 123 Main St, Anytown">
+                    </div>
+                    <div>
+                        <label for="jobType" class="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
+                        <select id="jobType" class="input-field">
+                            <option value="furnace_ac">Furnace & AC</option>
+                            <option value="heatpump_airhandler">Heat Pump & Air Handler</option>
+                            <option value="ac_only">AC Only</option>
+                            <option value="furnace_only">Furnace Only</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="systemSize" class="block text-sm font-medium text-gray-700 mb-1">Required System Size (Tons)</label>
+                        <select id="systemSize" class="input-field">
+                            <option value="">Select Tonnage</option>
+                            <option value="1.5">1.5 Tons</option>
+                            <option value="2">2 Tons</option>
+                            <option value="2.5">2.5 Tons</option>
+                            <option value="3">3 Tons</option>
+                            <option value="3.5">3.5 Tons</option>
+                            <option value="4">4 Tons</option>
+                            <option value="5">5 Tons</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="laborHours" class="block text-sm font-medium text-gray-700 mb-1">Estimated Labor (Hours)</label>
+                        <input type="number" id="laborHours" class="input-field" placeholder="e.g., 8">
+                    </div>
+                    <div>
+                        <label for="miscMaterials" class="block text-sm font-medium text-gray-700 mb-1">Misc. Materials Cost ($)</label>
+                        <input type="number" id="miscMaterials" class="input-field" placeholder="e.g., 450">
+                    </div>
+                    <div class="lg:col-span-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Customer Priorities (Select all that apply)</label>
+                        <div class="flex flex-wrap gap-3 mt-2">
+                            <button class="priority-btn btn btn-secondary" data-priority="Energy Savings"><i data-lucide="zap" class="mr-2 h-4 w-4"></i>Energy Savings</button>
+                            <button class="priority-btn btn btn-secondary" data-priority="Improved Comfort"><i data-lucide="thermometer-sun" class="mr-2 h-4 w-4"></i>Improved Comfort</button>
+                            <button class="priority-btn btn btn-secondary" data-priority="Quiet Operation"><i data-lucide="volume-x" class="mr-2 h-4 w-4"></i>Quiet Operation</button>
+                            <button class="priority-btn btn btn-secondary" data-priority="Air Quality"><i data-lucide="leaf" class="mr-2 h-4 w-4"></i>Air Quality</button>
+                            <button class="priority-btn btn btn-secondary" data-priority="Budget"><i data-lucide="dollar-sign" class="mr-2 h-4 w-4"></i>Budget</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2: Manual J Calculator -->
+            <div class="card">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span> Manual J Load Calculator</h2>
+                <div class="flex border-b mb-4">
+                    <button id="quickModeBtn" class="tab active">Quick Mode</button>
+                    <button id="fullModeBtn" class="tab">Full Mode</button>
+                </div>
 
-        <div class="tab-panel mt-4 space-y-4 hidden" data-tab="full">
-          <input type="text" id="fullZip" placeholder="ZIP Code" class="w-full border p-2 rounded-md" />
-          <input type="number" id="fullSqft" placeholder="Square Footage" class="w-full border p-2 rounded-md" />
-          <input type="number" id="fullFloors" value="1" placeholder="Floors" class="w-full border p-2 rounded-md" />
-          <input type="number" id="fullCeilingHeight" value="8" placeholder="Ceiling Height (ft)" class="w-full border p-2 rounded-md" />
-          <select id="fullInsulation" class="w-full border p-2 rounded-md">
-            <option value="average">Average Insulation</option>
-            <option value="poor">Poor Insulation</option>
-            <option value="good">Good Insulation</option>
-          </select>
-          <select id="fullWindowType" class="w-full border p-2 rounded-md">
-            <option value="double">Double Pane</option>
-            <option value="single">Single Pane</option>
-            <option value="lowe">Low-E Glass</option>
-          </select>
-          <input type="number" id="fullOccupants" value="2" placeholder="# of Occupants" class="w-full border p-2 rounded-md" />
-        </div>
+                <!-- Quick Mode Inputs -->
+                <div id="quickModeInputs" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="quickZip" placeholder="ZIP Code" class="input-field">
+                    <input type="number" id="quickSqft" placeholder="Square Footage" class="input-field">
+                    <select id="quickInsulation" class="input-field">
+                        <option value="average">Average Insulation</option>
+                        <option value="poor">Poor Insulation</option>
+                        <option value="good">Good Insulation</option>
+                    </select>
+                </div>
 
-        <button id="calculateLoadBtn" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md">Calculate Load</button>
+                <!-- Full Mode Inputs -->
+                <div id="fullModeInputs" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="fullZip" placeholder="ZIP Code" class="input-field">
+                    <input type="number" id="fullSqft" placeholder="Square Footage" class="input-field">
+                    <input type="number" id="fullFloors" value="1" placeholder="Floors" class="input-field">
+                    <input type="number" id="fullCeilingHeight" value="8" placeholder="Ceiling Height (ft)" class="input-field">
+                    <select id="fullInsulation" class="input-field">
+                        <option value="average">Average Insulation</option>
+                        <option value="poor">Poor Insulation</option>
+                        <option value="good">Good Insulation</option>
+                    </select>
+                    <select id="fullWindowType" class="input-field">
+                        <option value="double">Double Pane</option>
+                        <option value="single">Single Pane</option>
+                        <option value="lowe">Low-E Glass</option>
+                    </select>
+                    <input type="number" id="fullOccupants" value="2" placeholder="# of Occupants" class="input-field">
+                </div>
+                
+                <button id="calculateLoadBtn" class="mt-4 btn btn-secondary"><i data-lucide="calculator" class="mr-2 h-4 w-4"></i>Calculate Load</button>
 
-        <div id="manualJResult" class="hidden mt-6 border-t pt-4">
-          <p><strong>Cooling Load:</strong> <span id="resultCooling"></span></p>
-          <p><strong>Heating Load:</strong> <span id="resultHeating"></span></p>
-          <p><strong>Recommended Size:</strong> <span id="resultTons"></span></p>
-        </div>
-      </section>
-    </main>
-  </div>
+                <div id="manualJResult" class="hidden mt-6 border-t pt-4">
+                    <h3 class="text-lg font-semibold mb-2">Calculation Results</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div>
+                            <p class="text-sm text-gray-500">Cooling Load</p>
+                            <p id="resultCooling" class="text-xl font-bold text-blue-600"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Heating Load</p>
+                            <p id="resultHeating" class="text-xl font-bold text-red-600"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Recommended Size</p>
+                            <p id="resultTons" class="text-xl font-bold text-gray-800"></p>
+                        </div>
+                        <div class="md:col-start-4">
+                             <button id="useTonnageBtn" class="btn btn-primary w-full">Use This Tonnage</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-  <div id="printableProposal"></div>
+            <!-- Step 3: Build System -->
+            <div class="card text-center">
+                 <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span class="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span> Generate Proposal</h2>
+                <button id="buildSystemBtn" class="btn btn-primary btn-lg">
+                    <i data-lucide="settings-2" class="mr-2 h-5 w-5"></i>
+                    Build System Options
+                </button>
+            </div>
 
-  <script>
-    lucide.createIcons();
+            <!-- Step 4: Proposal -->
+            <div id="proposalSection" class="hidden">
+                <div class="card">
+                    <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center"><span class="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span> Your Custom Proposal</h2>
+                    <p class="text-gray-600 mb-6">Here are three tailored options. Select one to generate a printable quote.</p>
+                    
+                    <div id="proposalOutput" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Proposal cards will be inserted here -->
+                    </div>
+                </div>
 
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabPanels = document.querySelectorAll('.tab-panel');
+                <!-- Financing Calculator -->
+                <div class="card">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><i data-lucide="calculator" class="mr-3 text-blue-600"></i>Financing Calculator</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                        <div>
+                            <label for="loanAmount" class="block text-sm font-medium text-gray-700 mb-1">Investment Amount</label>
+                            <input type="number" id="loanAmount" class="input-field" placeholder="Enter total price">
+                        </div>
+                        <div>
+                            <label for="loanTerm" class="block text-sm font-medium text-gray-700 mb-1">Loan Term (Years)</label>
+                            <select id="loanTerm" class="input-field">
+                                <option value="3">3 Years</option>
+                                <option value="5">5 Years</option>
+                                <option value="7">7 Years</option>
+                                <option value="10">10 Years</option>
+                            </select>
+                        </div>
+                        <div class="text-center">
+                             <button id="calculatePaymentBtn" class="btn btn-primary w-full">Calculate Payment</button>
+                        </div>
+                    </div>
+                    <div id="paymentResult" class="mt-6 text-center hidden">
+                        <p class="text-gray-600">Estimated Monthly Payment:</p>
+                        <p class="text-4xl font-bold text-blue-600" id="monthlyPayment"></p>
+                        <p class="text-xs text-gray-500 mt-1">Based on an estimated 9.99% APR. For estimation purposes only.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = btn.dataset.tab;
-        tabPanels.forEach(panel => {
-          panel.classList.toggle('hidden', panel.dataset.tab !== target);
-        });
-        tabBtns.forEach(b => b.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600'));
-        btn.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
-      });
-    });
+    <div id="printableProposal"></div>
 
-    document.getElementById('calculateLoadBtn').addEventListener('click', () => {
-      const loadFactors = { poor: 35, average: 25, good: 18 };
-      let sqft, factor, ceilingAdj = 1, coolingBTU, heatingBTU;
+    <script>
+        const equipmentData = {
+            "furnaces": {
+                "modulating": [
+                    { "item": "G97CMN0601714A", "desc": "97% 3.5T 60mbh Modulating Ion", "size": 3.5, "price": 3703.94 },
+                    { "item": "G97CMN0801714A", "desc": "97% 3.5T 80mbh Modulating Ion", "size": 3.5, "price": 3887.17 },
+                    { "item": "G97CMN0802120A", "desc": "97% 5T 80mbh Modulating Ion", "size": 5, "price": 4185.49 },
+                    { "item": "G97CMN1002122A", "desc": "97% 5.5T 100mbh Modulating Ion", "size": 5.5, "price": 4408.09 },
+                    { "item": "G97CMN1202422A", "desc": "97% 5.5T 120mbh Modulating Ion", "size": 5.5, "price": 4642.80 }
+                ],
+                "2-stage": [
+                    { "item": "G96CTN0601714A", "desc": "96% 3.5T 60mbh 2-Stage Ion", "size": 3.5, "price": 3027.06 },
+                    { "item": "G96CTN0801714A", "desc": "96% 3.5T 80mbh 2-Stage Ion", "size": 3.5, "price": 3205.74 },
+                    { "item": "G96CTN0802120A", "desc": "96% 5T 80mbh 2-Stage Ion", "size": 5, "price": 3514.66 },
+                    { "item": "G96CTN1002122A", "desc": "96% 5.5T 100mbh 2-Stage Ion", "size": 5.5, "price": 3732.71 },
+                    { "item": "G96CTN1202422A", "desc": "96% 5.5T 120mbh 2-Stage Ion", "size": 5.5, "price": 3976.51 }
+                ],
+                "performance": [
+                    { "item": "N95ESN0601714A", "desc": "96% 3.5T 60mbh ECM Performance", "size": 3.5, "price": 2018.54 },
+                    { "item": "N95ESN0801716A", "desc": "96% 4T 80mbh ECM Performance", "size": 4, "price": 2186.63 },
+                    { "item": "N95ESN0802120A", "desc": "96% 5T 80mbh ECM Performance", "size": 5, "price": 2206.31 },
+                    { "item": "N95ESN1002122A", "desc": "96% 5T 100mbh ECM Performance", "size": 5, "price": 2415.29 }
+                ]
+            },
+            "ac": {
+                "variable-speed": [
+                    { "item": "HVA924GK", "desc": "2T Varispeed 19 SEER2 Ion", "size": 2, "price": 4456.54 },
+                    { "item": "HVA936GK", "desc": "3T Varispeed 19 SEER2 Ion", "size": 3, "price": 5421.14 },
+                    { "item": "HVA948GK", "desc": "4T Varispeed 19 SEER2 Ion", "size": 4, "price": 5907.23 },
+                    { "item": "HVA960GK", "desc": "5T Varispeed 19 SEER2 Ion", "size": 5, "price": 6552.31 }
+                ],
+                "2-stage": [
+                    { "item": "N4A7T24AKA", "desc": "2T 17 SEER2 2-Stage", "size": 2, "price": 2680.29 },
+                    { "item": "N4A7T36AKA", "desc": "3T 17 SEER2 2-Stage", "size": 3, "price": 3198.17 },
+                    { "item": "N4A7T48AKA", "desc": "4T 17 SEER2 2-Stage", "size": 4, "price": 3922.00 },
+                    { "item": "N4A7T60AKA", "desc": "5T 17 SEER2 2-Stage", "size": 5, "price": 4417.17 }
+                ],
+                "1-stage-16": [
+                    { "item": "N4A5S18AKA", "desc": "1.5T 16 SEER2 1-Stage", "size": 1.5, "price": 1962.51 },
+                    { "item": "N4A5S24AKA", "desc": "2T 16 SEER2 1-Stage", "size": 2, "price": 2113.94 },
+                    { "item": "N4A5S30AKA", "desc": "2.5T 16 SEER2 1-Stage", "size": 2.5, "price": 2277.49 },
+                    { "item": "N4A5S36AKA", "desc": "3T 16 SEER2 1-Stage", "size": 3, "price": 2613.66 },
+                    { "item": "N4A5S48AKA", "desc": "4T 15 SEER2 1-Stage", "size": 4, "price": 3310.23 },
+                    { "item": "N4A5S60AKA", "desc": "5T 15 SEER2 1-Stage", "size": 5, "price": 3793.29 }
+                ]
+            },
+            "heatPumps": {
+                "variable-speed": [
+                    { "item": "HVH824GKA", "desc": "2T Varispeed 19 SEER2 HP", "size": 2, "price": 6814.29 },
+                    { "item": "HVH836GKA", "desc": "3T Varispeed 19 SEER2 HP", "size": 3, "price": 7694.46 },
+                    { "item": "HVH848GKA", "desc": "4T Varispeed 19 SEER2 HP", "size": 4, "price": 8943.75 },
+                    { "item": "HVH860GKA", "desc": "5T Varispeed 19 SEER2 HP", "size": 5, "price": 9545.68 }
+                ],
+                "2-stage": [
+                    { "item": "N4H7T24AKAAA", "desc": "2T 17 SEER2 2-Stage HP", "size": 2, "price": 4927.11 },
+                    { "item": "N4H7T36AKAAA", "desc": "3T 17 SEER2 2-Stage HP", "size": 3, "price": 5913.29 },
+                    { "item": "N4H7T48AKAAA", "desc": "4T 17 SEER2 2-Stage HP", "size": 4, "price": 7314.00 },
+                    { "item": "N4H7T60AKAAA", "desc": "5T 17 SEER2 2-Stage HP", "size": 5, "price": 7927.29 }
+                ],
+                "1-stage-15": [
+                    { "item": "N4H5S18AKAAA", "desc": "1.5T 15 SEER 1-Stage HP", "size": 1.5, "price": 3486.64 },
+                    { "item": "N4H5S24AKAAA", "desc": "2T 15 SEER2 1-Stage HP", "size": 2, "price": 3867.11 },
+                    { "item": "N4H5S30AKAAA", "desc": "2.5T 15 SEER2 1-Stage HP", "size": 2.5, "price": 4304.36 },
+                    { "item": "N4H5S36AKAAA", "desc": "3T 15 SEER2 1-Stage HP", "size": 3, "price": 4790.82 },
+                    { "item": "N4H5S48AKAAA", "desc": "4T 15 SEER2 1-Stage HP", "size": 4, "price": 5918.96 },
+                    { "item": "N4H5S60AKAAA", "desc": "5T 15 SEER2 1-Stage HP", "size": 5, "price": 6621.21 }
+                ]
+            },
+            "fanCoils": {
+                "communicating": [
+                    { "item": "FCM4X2400AL", "desc": "2T Communicating Fan Coil", "size": 2, "price": 2896.83 },
+                    { "item": "FCM4X3600AL", "desc": "3T Communicating Fan Coil", "size": 3, "price": 2984.66 },
+                    { "item": "FCM4X4800AL", "desc": "4T Communicating Fan Coil", "size": 4, "price": 3572.20 },
+                    { "item": "FCM4X6000AL", "desc": "5T Communicating Fan Coil", "size": 5, "price": 3890.20 }
+                ],
+                "ecm-5-speed": [
+                    { "item": "FJMA4X18L0AB", "desc": "1.5T ECM 5-Speed Fan Coil", "size": 1.5, "price": 1823.20 },
+                    { "item": "FJMA4X24L0BC", "desc": "2T ECM 5-Speed Fan Coil", "size": 2, "price": 1951.91 },
+                    { "item": "FJMA4X30L0BB", "desc": "2.5T ECM 5-Speed Fan Coil", "size": 2.5, "price": 2094.26 },
+                    { "item": "FJMA4X36L0BB", "desc": "3T ECM 5-Speed Fan Coil", "size": 3, "price": 2233.57 },
+                    { "item": "FJMA4X48L0CB", "desc": "4T ECM 5-Speed Fan Coil", "size": 4, "price": 2610.63 },
+                    { "item": "FJMA4X60L0DB", "desc": "5T ECM 5-Speed Fan Coil", "size": 5, "price": 2787.80 }
+                ]
+            },
+            "coils": [
+                {"item": "EVD4X18M14A", "size": 1.5, "price": 651.14},
+                {"item": "EVD4X24M14A", "size": 2, "price": 696.57},
+                {"item": "EVD4X30M14A", "size": 2.5, "price": 767.74},
+                {"item": "EVD4X36M17A", "size": 3, "price": 764.71},
+                {"item": "EVD4X42M17A", "size": 3.5, "price": 894.94},
+                {"item": "EVD4X48M21A", "size": 4, "price": 958.54},
+                {"item": "EVD4X60M24A", "size": 5, "price": 1099.37}
+            ],
+            "accessories": {
+                "thermostat": {"item": "SYST0101CW", "desc": "Ion Wall Control WiFi Touchscreen", "price": 747.21}
+            }
+        };
 
-      const quick = !document.querySelector('[data-tab="quick"]').classList.contains('hidden');
+        function initializeApp() {
+            lucide.createIcons();
+            
+            // --- DOM Element Selection ---
+            const buildSystemBtn = document.getElementById('buildSystemBtn');
+            const proposalSection = document.getElementById('proposalSection');
+            const proposalOutput = document.getElementById('proposalOutput');
+            const printableProposal = document.getElementById('printableProposal');
+            const systemSizeSelect = document.getElementById('systemSize');
+            const jobTypeSelect = document.getElementById('jobType');
+            const laborHoursInput = document.getElementById('laborHours');
+            const miscMaterialsInput = document.getElementById('miscMaterials');
+            const priorityBtns = document.querySelectorAll('.priority-btn');
+            const calculatePaymentBtn = document.getElementById('calculatePaymentBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            // Manual J Elements
+            const quickModeBtn = document.getElementById('quickModeBtn');
+            const fullModeBtn = document.getElementById('fullModeBtn');
+            const quickModeInputs = document.getElementById('quickModeInputs');
+            const fullModeInputs = document.getElementById('fullModeInputs');
+            const calculateLoadBtn = document.getElementById('calculateLoadBtn');
+            const manualJResult = document.getElementById('manualJResult');
+            const useTonnageBtn = document.getElementById('useTonnageBtn');
+            
+            // --- State Variables ---
+            const LABOR_RATE = 125; 
+            let generatedPackages = [];
+            let selectedPriorities = [];
+            let currentCalcMode = 'quick';
+            let calculatedTonnage = null;
 
-      if (quick) {
-        sqft = parseFloat(document.getElementById('quickSqft').value);
-        factor = loadFactors[document.getElementById('quickInsulation').value];
-      } else {
-        sqft = parseFloat(document.getElementById('fullSqft').value);
-        factor = loadFactors[document.getElementById('fullInsulation').value];
-        ceilingAdj = parseFloat(document.getElementById('fullCeilingHeight').value) / 8;
-      }
+            // --- Event Listeners ---
+            priorityBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    btn.classList.toggle('btn-secondary');
+                    btn.classList.toggle('btn-primary');
+                });
+            });
 
-      if (!sqft) return alert('Enter valid square footage');
+            buildSystemBtn.addEventListener('click', handleBuildSystem);
+            calculatePaymentBtn.addEventListener('click', handleCalculatePayment);
+            resetBtn.addEventListener('click', handleReset);
+            quickModeBtn.addEventListener('click', () => switchManualJMode('quick'));
+            fullModeBtn.addEventListener('click', () => switchManualJMode('full'));
+            calculateLoadBtn.addEventListener('click', handleCalculateLoad);
+            useTonnageBtn.addEventListener('click', handleUseTonnage);
 
-      coolingBTU = sqft * factor * ceilingAdj;
-      heatingBTU = sqft * (factor + 5) * ceilingAdj;
+            // --- Functions ---
+            function handleBuildSystem() {
+                const tonnage = parseFloat(systemSizeSelect.value);
+                const laborHours = parseFloat(laborHoursInput.value) || 0;
+                const miscMaterials = parseFloat(miscMaterialsInput.value) || 0;
+                const jobType = jobTypeSelect.value;
 
-      document.getElementById('resultCooling').textContent = `${coolingBTU.toFixed(0)} BTU/hr`;
-      document.getElementById('resultHeating').textContent = `${heatingBTU.toFixed(0)} BTU/hr`;
-      document.getElementById('resultTons').textContent = `${(coolingBTU / 12000).toFixed(2)} tons`;
-      document.getElementById('manualJResult').classList.remove('hidden');
-    });
+                if (!tonnage && jobType !== 'furnace_only') {
+                    alert('Please select a system size.');
+                    return;
+                }
+                
+                generateProposal(jobType, tonnage, laborHours, miscMaterials);
+                proposalSection.classList.remove('hidden');
+                window.scrollTo({ top: proposalSection.offsetTop, behavior: 'smooth' });
+            }
 
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      location.reload();
-    });
-  </script>
+            function handleCalculatePayment() {
+                const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+                const loanTerm = parseInt(document.getElementById('loanTerm').value);
+                
+                if (!loanAmount || !loanTerm) {
+                    alert('Please enter a valid investment amount.');
+                    return;
+                }
+
+                const interestRate = 0.0999;
+                const monthlyRate = interestRate / 12;
+                const numberOfPayments = loanTerm * 12;
+
+                const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+
+                document.getElementById('monthlyPayment').textContent = `$${monthlyPayment.toFixed(2)}`;
+                document.getElementById('paymentResult').classList.remove('hidden');
+            }
+            
+            function handleReset() {
+                document.getElementById('customerName').value = '';
+                document.getElementById('customerAddress').value = '';
+                jobTypeSelect.value = 'furnace_ac';
+                systemSizeSelect.value = '';
+                laborHoursInput.value = '';
+                miscMaterialsInput.value = '';
+                proposalSection.classList.add('hidden');
+                proposalOutput.innerHTML = '';
+                printableProposal.innerHTML = '';
+                document.getElementById('paymentResult').classList.add('hidden');
+                document.getElementById('loanAmount').value = '';
+                priorityBtns.forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
+                });
+                manualJResult.classList.add('hidden');
+            }
+
+            function switchManualJMode(mode) {
+                currentCalcMode = mode;
+                if (mode === 'quick') {
+                    quickModeBtn.classList.add('active');
+                    fullModeBtn.classList.remove('active');
+                    quickModeInputs.classList.remove('hidden');
+                    fullModeInputs.classList.add('hidden');
+                } else {
+                    fullModeBtn.classList.add('active');
+                    quickModeBtn.classList.remove('active');
+                    fullModeInputs.classList.remove('hidden');
+                    quickModeInputs.classList.add('hidden');
+                }
+            }
+
+            function handleCalculateLoad() {
+                const loadFactors = { poor: 35, average: 25, good: 18 };
+                let sqft, factor, ceilingAdj = 1, coolingBTU, heatingBTU;
+
+                if (currentCalcMode === 'quick') {
+                    sqft = parseFloat(document.getElementById('quickSqft').value);
+                    factor = loadFactors[document.getElementById('quickInsulation').value];
+                } else {
+                    sqft = parseFloat(document.getElementById('fullSqft').value);
+                    factor = loadFactors[document.getElementById('fullInsulation').value];
+                    ceilingAdj = parseFloat(document.getElementById('fullCeilingHeight').value) / 8;
+                }
+
+                if (!sqft) {
+                    alert('Please enter square footage.');
+                    return;
+                }
+
+                coolingBTU = sqft * factor * ceilingAdj;
+                heatingBTU = sqft * (factor + 5) * ceilingAdj;
+                calculatedTonnage = (coolingBTU / 12000);
+
+                document.getElementById('resultCooling').textContent = `${coolingBTU.toFixed(0)} BTU/hr`;
+                document.getElementById('resultHeating').textContent = `${heatingBTU.toFixed(0)} BTU/hr`;
+                document.getElementById('resultTons').textContent = `${calculatedTonnage.toFixed(2)} tons`;
+                manualJResult.classList.remove('hidden');
+            }
+
+            function handleUseTonnage() {
+                if (calculatedTonnage !== null) {
+                    const options = Array.from(systemSizeSelect.options);
+                    const closestOption = options.reduce((prev, curr) => {
+                        return (Math.abs(parseFloat(curr.value) - calculatedTonnage) < Math.abs(parseFloat(prev.value) - calculatedTonnage) ? curr : prev);
+                    });
+                    systemSizeSelect.value = closestOption.value;
+                }
+            }
+
+            function findClosest(arr, size) {
+                if (!arr || arr.length === 0) return null;
+                return arr.reduce((prev, curr) => Math.abs(curr.size - size) < Math.abs(prev.size - size) ? curr : prev);
+            }
+
+            function generateProposal(jobType, tonnage, laborHours, miscMaterials) {
+                const thermostat = equipmentData.accessories.thermostat;
+                generatedPackages = []; 
+
+                switch (jobType) {
+                    case 'furnace_ac':
+                        generatedPackages = [
+                            { title: "Performance", level: "Good", color: "gray", items: [findClosest(equipmentData.furnaces.performance, tonnage), findClosest(equipmentData.ac['1-stage-16'], tonnage), findClosest(equipmentData.coils, tonnage)], features: ["Reliable Operation", "Standard Efficiency", "Budget-Friendly"] },
+                            { title: "Comfort Series", level: "Better", color: "blue", items: [findClosest(equipmentData.furnaces['2-stage'], tonnage), findClosest(equipmentData.ac['2-stage'], tonnage), findClosest(equipmentData.coils, tonnage), thermostat], features: ["Enhanced Comfort", "Higher Energy Savings", "Quieter Operation", "Advanced Control"] },
+                            { title: "Ion Ultimate", level: "Best", color: "indigo", items: [findClosest(equipmentData.furnaces.modulating, tonnage), findClosest(equipmentData.ac['variable-speed'], tonnage), findClosest(equipmentData.coils, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Comfort Control", "Whisper-Quiet Performance", "Smart Communicating System"] }
+                        ];
+                        break;
+                    case 'heatpump_airhandler':
+                        generatedPackages = [
+                             { title: "Performance HP", level: "Good", color: "gray", items: [findClosest(equipmentData.heatPumps['1-stage-15'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage)], features: ["Reliable All-in-One System", "Standard Efficiency", "Budget-Friendly"] },
+                             { title: "Comfort Series HP", level: "Better", color: "blue", items: [findClosest(equipmentData.heatPumps['2-stage'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage), thermostat], features: ["Enhanced Comfort & Dehumidification", "Higher Energy Savings", "Advanced Control"] },
+                             { title: "Ion Ultimate HP", level: "Best", color: "indigo", items: [findClosest(equipmentData.heatPumps['variable-speed'], tonnage), findClosest(equipmentData.fanCoils.communicating, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Comfort Control", "Whisper-Quiet Performance", "Smart Communicating System"] }
+                        ];
+                        break;
+                    case 'ac_only':
+                         generatedPackages = [
+                            { title: "Performance AC", level: "Good", color: "gray", items: [findClosest(equipmentData.ac['1-stage-16'], tonnage), findClosest(equipmentData.coils, tonnage)], features: ["Reliable Cooling", "Standard Efficiency", "Budget-Friendly"] },
+                            { title: "Comfort Series AC", level: "Better", color: "blue", items: [findClosest(equipmentData.ac['2-stage'], tonnage), findClosest(equipmentData.coils, tonnage), thermostat], features: ["Enhanced Dehumidification", "Higher Energy Savings", "Quieter Operation"] },
+                            { title: "Ion Ultimate AC", level: "Best", color: "indigo", items: [findClosest(equipmentData.ac['variable-speed'], tonnage), findClosest(equipmentData.coils, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Cooling Comfort", "Whisper-Quiet Performance"] }
+                        ];
+                        break;
+                    case 'furnace_only':
+                         generatedPackages = [
+                            { title: "Performance Furnace", level: "Good", color: "gray", items: [findClosest(equipmentData.furnaces.performance, tonnage)], features: ["Reliable Heating", "Standard Efficiency", "Budget-Friendly"] },
+                            { title: "Comfort Series Furnace", level: "Better", color: "blue", items: [findClosest(equipmentData.furnaces['2-stage'], tonnage), thermostat], features: ["Consistent Temperatures", "Higher Energy Savings", "Quieter Operation"] },
+                            { title: "Ion Ultimate Furnace", level: "Best", color: "indigo", items: [findClosest(equipmentData.furnaces.modulating, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Heating Comfort", "Precise Temperature Control"] }
+                        ];
+                        break;
+                }
+
+                proposalOutput.innerHTML = '';
+                generatedPackages.forEach((pkg, index) => {
+                    const equipmentTotal = pkg.items.reduce((sum, item) => (item ? sum + item.price : sum), 0);
+                    const laborTotal = laborHours * LABOR_RATE;
+                    const finalPrice = equipmentTotal + laborTotal + miscMaterials;
+                    pkg.finalPrice = finalPrice; 
+
+                    const cardHTML = `
+                        <div class="card proposal-card ${pkg.level.toLowerCase()}">
+                            <div class="proposal-card-content">
+                                <div class="text-center">
+                                    <span class="tag bg-${pkg.color}-100 text-${pkg.color}-700">${pkg.level}</span>
+                                    <h3 class="text-2xl font-bold text-gray-800 mt-3">${pkg.title}</h3>
+                                    <div class="my-6">
+                                        <span class="text-4xl font-extrabold text-gray-900">$${finalPrice.toFixed(2)}</span>
+                                        <span class="text-gray-500"> / installed</span>
+                                    </div>
+                                </div>
+                                <div class="mb-6">
+                                    <h4 class="font-semibold text-gray-700 mb-3">Key Features:</h4>
+                                    <ul class="space-y-2">
+                                        ${pkg.features.map(f => `<li class="flex items-center text-gray-600"><i data-lucide="check-circle" class="h-5 w-5 text-green-500 mr-2"></i>${f}</li>`).join('')}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-700 mb-3">Equipment Included:</h4>
+                                    <ul class="space-y-2 text-sm text-gray-500">
+                                        ${pkg.items.map(i => i ? `<li><strong>${i.item}:</strong> ${i.desc}</li>` : '').join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-6">
+                                <button class="btn btn-primary w-full print-btn" data-index="${index}">
+                                    <i data-lucide="printer" class="mr-2 h-4 w-4"></i>
+                                    Select & Print
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    proposalOutput.innerHTML += cardHTML;
+                });
+                lucide.createIcons();
+                
+                document.querySelectorAll('.print-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const packageIndex = e.currentTarget.dataset.index;
+                        printProposal(packageIndex);
+                    });
+                });
+            }
+
+            function printProposal(packageIndex) {
+                const pkg = generatedPackages[packageIndex];
+                const customerName = document.getElementById('customerName').value || 'Valued Customer';
+                const customerAddress = document.getElementById('customerAddress').value || 'N/A';
+                const today = new Date().toLocaleDateString();
+
+                const printableHTML = `
+                    <div class="p-8 bg-white max-w-4xl mx-auto font-sans">
+                        <header class="flex justify-between items-start mb-10">
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-800">Your Company Name</h1>
+                                <p class="text-gray-500">123 HVAC Lane, Anytown, USA 12345</p>
+                                <p class="text-gray-500">(555) 123-4567 | yourwebsite.com</p>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-600">Installation Proposal</h2>
+                        </header>
+                        
+                        <div class="grid grid-cols-2 gap-8 mb-10">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Prepared For</h3>
+                                <p class="font-bold text-gray-800">${customerName}</p>
+                                <p class="text-gray-600">${customerAddress}</p>
+                            </div>
+                            <div class="text-right">
+                                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Date</h3>
+                                <p class="font-bold text-gray-800">${today}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">${pkg.title} System</h3>
+                            <p class="text-gray-600 mb-4">A summary of the selected comfort system and investment.</p>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Total Investment</p>
+                                <p class="text-4xl font-extrabold text-gray-900">$${pkg.finalPrice.toFixed(2)}</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-10">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Scope of Work & Equipment</h3>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                ${pkg.items.map(i => i ? `<li><strong>${i.item}:</strong> Install new ${i.desc}.</li>` : '').join('')}
+                                <li>Installation includes all necessary labor and miscellaneous materials.</li>
+                                <li>Removal and responsible disposal of existing equipment.</li>
+                                <li>System testing and commissioning to ensure proper operation.</li>
+                            </ul>
+                        </div>
+
+                        <footer class="text-center text-xs text-gray-400 pt-6 border-t">
+                            <p>Thank you for the opportunity to earn your business. This proposal is valid for 30 days.</p>
+                            <p>Your Company Name | Proposal generated by HVAC Sales Tool</p>
+                        </footer>
+                    </div>
+                `;
+                
+                printableProposal.innerHTML = printableHTML;
+                window.print();
+            }
+        }
+
+        function waitForLucide() {
+            if (typeof lucide !== 'undefined') {
+                initializeApp();
+            } else {
+                setTimeout(waitForLucide, 50);
+            }
+        }
+
+        waitForLucide();
+    </script>
 </body>
 </html>
