@@ -11,18 +11,16 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <!-- Babel Compiler -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
         .printable-area {
-            position: absolute;
-            left: -9999px;
-            top: auto;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
+            display: none;
         }
         @media print {
             body > *:not(.printable-area) {
@@ -30,10 +28,10 @@
             }
             .printable-area {
                 display: block;
-                position: static;
-                width: auto;
-                height: auto;
-                overflow: visible;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
             }
         }
     </style>
@@ -58,7 +56,8 @@
                 settings: <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />,
                 printer: <><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></>,
                 check: <polyline points="20 6 9 17 4 12" />,
-                plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>
+                plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>,
+                camera: <><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></>
             };
             return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{icons[name] || <circle cx="12" cy="12" r="10" />}</svg>;
         };
@@ -167,7 +166,7 @@
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {Object.entries(addonsData).map(([key, addon]) => {
-                            if (key === 'thermostat') return null; // Don't show thermostat as a selectable addon
+                            if (key === 'thermostat') return null;
                             return (
                                 <label key={key} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
                                     <input 
@@ -182,6 +181,56 @@
                             )
                         })}
                     </div>
+                </Card>
+            );
+        };
+
+        const PhotoUploader = ({ photos, setDetails }) => {
+            const handlePhotoChange = (event) => {
+                const files = Array.from(event.target.files);
+                const readers = [];
+
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    readers.push(new Promise(resolve => {
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(file);
+                    }));
+                });
+
+                Promise.all(readers).then(images => {
+                    setDetails(prev => ({ ...prev, photos: [...prev.photos, ...images] }));
+                });
+            };
+
+            return (
+                <Card>
+                     <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span> Job Site Photos
+                    </h2>
+                    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
+                        <div className="text-center">
+                            <Icon name="camera" className="mx-auto h-12 w-12 text-gray-400" />
+                            <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                                <label htmlFor="file-upload" className="relative cursor-pointer rounded-md bg-white font-semibold text-blue-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2 hover:text-blue-500">
+                                    <span>Upload files</span>
+                                    <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple accept="image/*" onChange={handlePhotoChange} />
+                                </label>
+                                <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+                    </div>
+                     {photos.length > 0 && (
+                        <div className="mt-4">
+                            <h3 className="font-medium text-gray-700">Photo Previews:</h3>
+                            <div className="mt-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                {photos.map((photo, index) => (
+                                    <img key={index} src={photo} alt={`Job photo ${index + 1}`} className="h-24 w-24 object-cover rounded-md" />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </Card>
             );
         };
@@ -221,7 +270,7 @@
 
             return (
                 <Card>
-                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span> Manual J Load Calculator</h2>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span> Manual J Load Calculator</h2>
                     <div className="flex border-b mb-4">
                         <button onClick={() => setMode('quick')} className={`tab ${mode === 'quick' ? 'active' : ''}`}>Quick Mode</button>
                         <button onClick={() => setMode('full')} className={`tab ${mode === 'full' ? 'active' : ''}`}>Full Mode</button>
@@ -256,7 +305,7 @@
             return (
                 <div id="proposalSection">
                     <Card>
-                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span> Your Custom Proposal</h2>
+                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span> Your Custom Proposal</h2>
                         <p className="text-gray-600 mb-6">Here are three tailored options. Select one to generate a printable quote.</p>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {packages.map((pkg, index) => (
@@ -284,7 +333,7 @@
                                         </div>
                                     </div>
                                     <div className="mt-6">
-                                        <Button onClick={() => onPrint(pkg)} className="w-full"><Icon name="printer" className="mr-2 h-4 w-4" />Select & Print</Button>
+                                        <Button onClick={() => onPrint(pkg)} className="w-full"><Icon name="printer" className="mr-2 h-4 w-4" />Download PDF</Button>
                                     </div>
                                 </div>
                             ))}
@@ -342,6 +391,16 @@
                             <p className="text-gray-700 whitespace-pre-wrap">{details.notes}</p>
                         </div>
                     )}
+                    {details.photos.length > 0 && (
+                        <div className="mb-10" style={{pageBreakBefore: 'always'}}>
+                            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Job Site Photos</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                {details.photos.map((photo, index) => (
+                                    <img key={index} src={photo} alt={`Job photo ${index+1}`} className="w-full rounded-md shadow-md" />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <footer className="text-center text-xs text-gray-400 pt-6 border-t">
                         <p>Thank you for the opportunity to earn your business. This proposal is valid for 30 days.</p>
                         <p>Mechanical Temp | Proposal generated by HVAC Closer</p>
@@ -355,18 +414,52 @@
             const [details, setDetails] = useState({
                 customerName: '', customerAddress: '', jobType: 'furnace_ac', systemSize: '',
                 laborHours: '8', miscMaterials: '450', priorities: [],
-                addons: [], accessDifficulty: '1', notes: ''
+                addons: [], accessDifficulty: '1', notes: '', photos: []
             });
             const [packages, setPackages] = useState([]);
             const [packageToPrint, setPackageToPrint] = useState(null);
-            const printRef = useRef();
-            
+            const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+            const printableRef = useRef();
+
             useEffect(() => {
-                if (packageToPrint) {
-                    window.print();
-                    setPackageToPrint(null);
+                if (packageToPrint && printableRef.current) {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: 'p',
+                        unit: 'px',
+                        format: 'a4',
+                        putOnlyUsedFonts:true
+                    });
+                    
+                    html2canvas(printableRef.current, { scale: 2 }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/png');
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = pdf.internal.pageSize.getHeight();
+                        const canvasWidth = canvas.width;
+                        const canvasHeight = canvas.height;
+                        const ratio = canvasWidth / canvasHeight;
+                        const imgHeight = pdfWidth / ratio;
+                        
+                        let heightLeft = canvasHeight;
+                        let position = 0;
+
+                        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight * pdfWidth / canvasWidth);
+                        heightLeft -= pdf.internal.pageSize.getHeight();
+
+                        while (heightLeft > 0) {
+                            position = heightLeft - canvasHeight; 
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight * pdfWidth / canvasWidth);
+                            heightLeft -= pdf.internal.pageSize.getHeight();
+                        }
+                        
+                        pdf.save(`Proposal-${details.customerName || 'Customer'}.pdf`);
+                        setPackageToPrint(null);
+                        setIsGeneratingPdf(false);
+                    });
                 }
-            }, [packageToPrint]);
+            }, [packageToPrint, details.customerName]);
+
 
             const equipmentData = {
                 "furnaces": {
@@ -553,6 +646,7 @@
             };
 
             const handlePrint = (pkg) => {
+                setIsGeneratingPdf(true);
                 setPackageToPrint(pkg);
             };
 
@@ -566,7 +660,7 @@
                 setDetails({
                     customerName: '', customerAddress: '', jobType: 'furnace_ac', systemSize: '',
                     laborHours: '8', miscMaterials: '450', priorities: [], addons: [], 
-                    accessDifficulty: '1', notes: ''
+                    accessDifficulty: '1', notes: '', photos: []
                 });
                 setPackages([]);
                 setPackageToPrint(null);
@@ -588,15 +682,16 @@
                         <main id="main-content" className="no-print">
                             <JobDetails details={details} setDetails={setDetails} />
                             <Addons selectedAddons={details.addons} onAddonToggle={handleAddonToggle} addonsData={equipmentData.accessories} />
+                            <PhotoUploader photos={details.photos} setDetails={setDetails} />
                             <ManualJCalculator onTonnageCalculated={handleTonnageCalculated} />
                             <Card className="text-center">
-                                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span> Generate Proposal</h2>
+                                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span> Generate Proposal</h2>
                                 <Button onClick={handleGeneratePackages} className="btn-lg"><Icon name="settings" className="mr-2 h-5 w-5" />Build System Options</Button>
                             </Card>
                             <ProposalDisplay packages={packages} onPrint={handlePrint} />
                         </main>
                         <div className="printable-area">
-                            <PrintableProposal pkg={packageToPrint} details={details} ref={printRef} />
+                            <PrintableProposal pkg={packageToPrint} details={details} ref={printableRef} />
                         </div>
                     </div>
                 </div>
