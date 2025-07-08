@@ -16,6 +16,26 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        .no-print {
+            /* This class is used to hide elements during printing */
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printableProposal, #printableProposal * {
+                visibility: visible;
+            }
+            #printableProposal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -37,7 +57,8 @@
                 calculator: <rect x="4" y="2" width="16" height="20" rx="2" />,
                 settings: <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />,
                 printer: <><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></>,
-                check: <polyline points="20 6 9 17 4 12" />
+                check: <polyline points="20 6 9 17 4 12" />,
+                plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>
             };
             return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{icons[name] || <circle cx="12" cy="12" r="10" />}</svg>;
         };
@@ -121,6 +142,30 @@
                 </Card>
             );
         };
+        
+        const Addons = ({ selectedAddons, onAddonToggle, addonsData }) => {
+            return (
+                <Card>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span> Add-ons & Accessories
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {Object.entries(addonsData).map(([key, addon]) => (
+                            <label key={key} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                <input 
+                                    type="checkbox" 
+                                    checked={selectedAddons.includes(key)}
+                                    onChange={() => onAddonToggle(key)}
+                                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className="text-gray-700 font-medium">{addon.desc}</span>
+                                <span className="ml-auto font-bold text-gray-800">${addon.price.toFixed(2)}</span>
+                            </label>
+                        ))}
+                    </div>
+                </Card>
+            );
+        };
 
         const ManualJCalculator = ({ onTonnageCalculated }) => {
             const [mode, setMode] = useState('quick');
@@ -157,7 +202,7 @@
 
             return (
                 <Card>
-                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span> Manual J Load Calculator</h2>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span> Manual J Load Calculator</h2>
                     <div className="flex border-b mb-4">
                         <button onClick={() => setMode('quick')} className={`tab ${mode === 'quick' ? 'active' : ''}`}>Quick Mode</button>
                         <button onClick={() => setMode('full')} className={`tab ${mode === 'full' ? 'active' : ''}`}>Full Mode</button>
@@ -192,7 +237,7 @@
             return (
                 <div id="proposalSection">
                     <Card>
-                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span> Your Custom Proposal</h2>
+                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span> Your Custom Proposal</h2>
                         <p className="text-gray-600 mb-6">Here are three tailored options. Select one to generate a printable quote.</p>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {packages.map((pkg, index) => (
@@ -284,6 +329,7 @@
             const [details, setDetails] = useState({
                 customerName: '', customerAddress: '', jobType: 'furnace_ac', systemSize: '',
                 laborHours: '8', miscMaterials: '450', priorities: [],
+                addons: []
             });
             const [packages, setPackages] = useState([]);
             const [packageToPrint, setPackageToPrint] = useState(null);
@@ -382,7 +428,10 @@
                     {"item": "EVD4X60M24A", "size": 5, "price": 1099.37}
                 ],
                 "accessories": {
-                    "thermostat": {"item": "SYST0101CW", "desc": "Ion Wall Control WiFi Touchscreen", "price": 747.21}
+                    "thermostat": {"item": "SYST0101CW", "desc": "Ion Wall Control WiFi Touchscreen", "price": 747.21},
+                    "humidifier": { "item": "HUMXX", "desc": "Whole-Home Humidifier", "price": 850.00 },
+                    "uvLight": { "item": "UVLXX", "desc": "UV Air Purifier Light", "price": 650.00 },
+                    "mediaFilter": { "item": "MEDCABXX", "desc": "High-Efficiency Media Filter Cabinet", "price": 450.00 }
                 }
             };
             const LABOR_RATE = 125;
@@ -390,6 +439,15 @@
             const findClosest = (arr, size) => {
                 if (!arr || arr.length === 0) return null;
                 return arr.reduce((prev, curr) => Math.abs(curr.size - size) < Math.abs(prev.size - size) ? curr : prev);
+            };
+            
+            const handleAddonToggle = (addonKey) => {
+                 setDetails(prev => {
+                    const newAddons = prev.addons.includes(addonKey)
+                        ? prev.addons.filter(a => a !== addonKey)
+                        : [...prev.addons, addonKey];
+                    return { ...prev, addons: newAddons };
+                });
             };
 
             const handleGeneratePackages = () => {
@@ -437,8 +495,16 @@
                     const equipmentTotal = pkg.items.reduce((sum, item) => (item ? sum + item.price : sum), 0);
                     const laborTotal = parseFloat(details.laborHours) * LABOR_RATE;
                     const miscTotal = parseFloat(details.miscMaterials);
-                    const finalPrice = equipmentTotal + laborTotal + miscTotal;
-                    return { ...pkg, finalPrice };
+                    
+                    const existingItemKeys = new Set(pkg.items.map(i => i ? i.item : null));
+                    const uniqueAddonKeys = details.addons.filter(key => !existingItemKeys.has(equipmentData.accessories[key].item));
+                    const addonsTotal = uniqueAddonKeys.reduce((sum, key) => sum + equipmentData.accessories[key].price, 0);
+                    const uniqueAddonItems = uniqueAddonKeys.map(key => equipmentData.accessories[key]);
+
+                    const finalPrice = equipmentTotal + laborTotal + miscTotal + addonsTotal;
+                    const finalItems = [...pkg.items, ...uniqueAddonItems];
+
+                    return { ...pkg, finalPrice, items: finalItems };
                 });
 
                 setPackages(calculatedPackages);
@@ -461,7 +527,7 @@
             const handleReset = () => {
                 setDetails({
                     customerName: '', customerAddress: '', jobType: 'furnace_ac', systemSize: '',
-                    laborHours: '8', miscMaterials: '450', priorities: [],
+                    laborHours: '8', miscMaterials: '450', priorities: [], addons: []
                 });
                 setPackages([]);
                 setPackageToPrint(null);
@@ -482,9 +548,10 @@
                         </header>
                         <main id="main-content" className="no-print">
                             <JobDetails details={details} setDetails={setDetails} />
+                            <Addons selectedAddons={details.addons} onAddonToggle={handleAddonToggle} addonsData={equipmentData.accessories} />
                             <ManualJCalculator onTonnageCalculated={handleTonnageCalculated} />
                             <Card className="text-center">
-                                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span> Generate Proposal</h2>
+                                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span> Generate Proposal</h2>
                                 <Button onClick={handleGeneratePackages} className="btn-lg"><Icon name="settings" className="mr-2 h-5 w-5" />Build System Options</Button>
                             </Card>
                             <ProposalDisplay packages={packages} onPrint={handlePrint} />
@@ -500,7 +567,6 @@
         const container = document.getElementById('root');
         const root = ReactDOM.createRoot(container);
         root.render(<App />);
-
     </script>
 </body>
 </html>
