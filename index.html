@@ -89,6 +89,13 @@
                 </select>
             </div>
         );
+        
+        const TextAreaField = ({ label, ...props }) => (
+            <div>
+                {label && <label htmlFor={props.name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
+                <textarea {...props} rows="4" className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+        );
 
         // --- Main App Components ---
         const JobDetails = ({ details, setDetails }) => {
@@ -118,6 +125,7 @@
                         <SelectField label="Job Type" name="jobType" value={details.jobType} onChange={handleChange} options={[
                             { value: 'furnace_ac', label: 'Furnace & AC' },
                             { value: 'heatpump_airhandler', label: 'Heat Pump & Air Handler' },
+                            { value: 'airhandler_ac', label: 'Air Handler & AC' },
                             { value: 'ac_only', label: 'AC Only' },
                             { value: 'furnace_only', label: 'Furnace Only' },
                         ]} />
@@ -128,6 +136,14 @@
                         ]} />
                         <InputField type="number" label="Estimated Labor (Hours)" name="laborHours" value={details.laborHours} onChange={handleChange} placeholder="e.g., 8" />
                         <InputField type="number" label="Misc. Materials Cost ($)" name="miscMaterials" value={details.miscMaterials} onChange={handleChange} placeholder="e.g., 450" />
+                        <SelectField label="Access Difficulty" name="accessDifficulty" value={details.accessDifficulty} onChange={handleChange} options={[
+                            { value: '1', label: '1 - Easy' },
+                            { value: '2', label: '2 - Average' },
+                            { value: '3', label: '3 - Hard' },
+                        ]} />
+                         <div className="lg:col-span-3">
+                             <TextAreaField label="Job Notes" name="notes" value={details.notes} onChange={handleChange} placeholder="Enter any job-specific notes here..." />
+                        </div>
                         <div className="lg:col-span-3">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Customer Priorities</label>
                             <div className="flex flex-wrap gap-3 mt-2">
@@ -150,18 +166,21 @@
                         <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span> Add-ons & Accessories
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {Object.entries(addonsData).map(([key, addon]) => (
-                            <label key={key} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedAddons.includes(key)}
-                                    onChange={() => onAddonToggle(key)}
-                                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="text-gray-700 font-medium">{addon.desc}</span>
-                                <span className="ml-auto font-bold text-gray-800">${addon.price.toFixed(2)}</span>
-                            </label>
-                        ))}
+                        {Object.entries(addonsData).map(([key, addon]) => {
+                            if (key === 'thermostat') return null; // Don't show thermostat as a selectable addon
+                            return (
+                                <label key={key} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={selectedAddons.includes(key)}
+                                        onChange={() => onAddonToggle(key)}
+                                        className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span className="text-gray-700 font-medium">{addon.desc}</span>
+                                    <span className="ml-auto font-bold text-gray-800">${addon.price.toFixed(2)}</span>
+                                </label>
+                            )
+                        })}
                     </div>
                 </Card>
             );
@@ -316,9 +335,15 @@
                             <li>System testing and commissioning to ensure proper operation.</li>
                         </ul>
                     </div>
+                    {details.notes && (
+                         <div className="mb-10">
+                            <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Job Notes</h3>
+                            <p className="text-gray-700 whitespace-pre-wrap">{details.notes}</p>
+                        </div>
+                    )}
                     <footer className="text-center text-xs text-gray-400 pt-6 border-t">
                         <p>Thank you for the opportunity to earn your business. This proposal is valid for 30 days.</p>
-                        <p>Your Company Name | Proposal generated by HVAC Sales Tool</p>
+                        <p>Your Company Name | Proposal generated by HVAC Closer</p>
                     </footer>
                 </div>
             );
@@ -329,7 +354,7 @@
             const [details, setDetails] = useState({
                 customerName: '', customerAddress: '', jobType: 'furnace_ac', systemSize: '',
                 laborHours: '8', miscMaterials: '450', priorities: [],
-                addons: []
+                addons: [], accessDifficulty: '1', notes: ''
             });
             const [packages, setPackages] = useState([]);
             const [packageToPrint, setPackageToPrint] = useState(null);
@@ -459,6 +484,8 @@
                 
                 const thermostat = equipmentData.accessories.thermostat;
                 let newPackages = [];
+                const accessMultipliers = { '1': 1.0, '2': 1.25, '3': 1.5 };
+                const laborMultiplier = accessMultipliers[details.accessDifficulty];
 
                 switch (details.jobType) {
                     case 'furnace_ac':
@@ -473,6 +500,13 @@
                              { title: "Performance HP", level: "Good", color: "gray", items: [findClosest(equipmentData.heatPumps['1-stage-15'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage)], features: ["Reliable All-in-One System", "Standard Efficiency", "Budget-Friendly"] },
                              { title: "Comfort Series HP", level: "Better", color: "blue", items: [findClosest(equipmentData.heatPumps['2-stage'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage), thermostat], features: ["Enhanced Comfort & Dehumidification", "Higher Energy Savings", "Advanced Control"] },
                              { title: "Ion Ultimate HP", level: "Best", color: "indigo", items: [findClosest(equipmentData.heatPumps['variable-speed'], tonnage), findClosest(equipmentData.fanCoils.communicating, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Comfort Control", "Whisper-Quiet Performance", "Smart Communicating System"] }
+                        ];
+                        break;
+                    case 'airhandler_ac':
+                        newPackages = [
+                             { title: "Performance Electric Heat", level: "Good", color: "gray", items: [findClosest(equipmentData.ac['1-stage-16'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage)], features: ["Reliable All-Electric System", "Standard Efficiency", "Budget-Friendly"] },
+                             { title: "Comfort Series Electric Heat", level: "Better", color: "blue", items: [findClosest(equipmentData.ac['2-stage'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage), thermostat], features: ["Enhanced Comfort & Dehumidification", "Higher Energy Savings", "Advanced Control"] },
+                             { title: "Ion Ultimate Electric Heat", level: "Best", color: "indigo", items: [findClosest(equipmentData.ac['variable-speed'], tonnage), findClosest(equipmentData.fanCoils.communicating, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Comfort Control", "Whisper-Quiet Performance", "Smart Communicating System"] }
                         ];
                         break;
                     case 'ac_only':
@@ -493,8 +527,8 @@
                 
                 const calculatedPackages = newPackages.map(pkg => {
                     const equipmentTotal = pkg.items.reduce((sum, item) => (item ? sum + item.price : sum), 0);
-                    const laborTotal = parseFloat(details.laborHours) * LABOR_RATE;
-                    const miscTotal = parseFloat(details.miscMaterials);
+                    const laborTotal = parseFloat(details.laborHours) * LABOR_RATE * laborMultiplier;
+                    const miscTotal = parseFloat(details.miscMaterials) || 0;
                     
                     const existingItemKeys = new Set(pkg.items.map(i => i ? i.item : null));
                     const uniqueAddonKeys = details.addons.filter(key => !existingItemKeys.has(equipmentData.accessories[key].item));
@@ -527,7 +561,8 @@
             const handleReset = () => {
                 setDetails({
                     customerName: '', customerAddress: '', jobType: 'furnace_ac', systemSize: '',
-                    laborHours: '8', miscMaterials: '450', priorities: [], addons: []
+                    laborHours: '8', miscMaterials: '450', priorities: [], addons: [], 
+                    accessDifficulty: '1', notes: ''
                 });
                 setPackages([]);
                 setPackageToPrint(null);
@@ -540,7 +575,7 @@
                             <div className="flex items-center gap-3">
                                 <div className="bg-blue-600 p-3 rounded-lg text-white"><Icon name="wind" /></div>
                                 <div>
-                                    <h1 className="text-2xl font-bold text-gray-800">HVAC Sales Tool</h1>
+                                    <h1 className="text-2xl font-bold text-gray-800">HVAC Closer</h1>
                                     <p className="text-gray-500">Streamline your sales process.</p>
                                 </div>
                             </div>
