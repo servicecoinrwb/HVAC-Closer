@@ -6,32 +6,29 @@
     <title>HVAC Closer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- React Libraries -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel Compiler -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
-        .no-print {
-            /* This class is used to hide elements during printing */
+        .printable-area {
+            display: none;
         }
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printableProposal, #printableProposal * {
-                visibility: visible;
-            }
-            #printableProposal {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-            .no-print {
+            body > *:not(.printable-area) {
                 display: none !important;
+            }
+            .printable-area {
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
             }
         }
     </style>
@@ -258,7 +255,7 @@
                         <p className="text-gray-600 mb-6">Here are three tailored options. Select one to generate a printable quote.</p>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {packages.map((pkg, index) => (
-                                <div key={index} className={`card proposal-card ${pkg.level.toLowerCase()} border-2 rounded-lg flex flex-col`}>
+                                <div key={pkg.title + index} className={`card proposal-card ${pkg.level.toLowerCase()} border-2 rounded-lg flex flex-col`}>
                                     <div className="proposal-card-content flex-grow">
                                         <div className="text-center">
                                             <span className={`tag bg-${pkg.color}-100 text-${pkg.color}-700`}>{pkg.level}</span>
@@ -277,7 +274,7 @@
                                         <div>
                                             <h4 className="font-semibold text-gray-700 mb-3">Equipment Included:</h4>
                                             <ul className="space-y-2 text-sm text-gray-500">
-                                                {pkg.items.map(i => i ? <li key={i.item}><strong>{i.item}:</strong> {i.desc}</li> : null)}
+                                                {pkg.items.map((i, idx) => i ? <li key={i.item + idx}><strong>{i.item}:</strong> {i.desc}</li> : null)}
                                             </ul>
                                         </div>
                                     </div>
@@ -328,7 +325,7 @@
                     <div className="mb-10">
                         <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Scope of Work & Equipment</h3>
                         <ul className="list-disc list-inside space-y-2 text-gray-700">
-                            {pkg.items.map(i => i ? <li key={i.item}><strong>{i.item}:</strong> Install new {i.desc}.</li> : null)}
+                            {pkg.items.map((i, idx) => i ? <li key={i.item + idx}><strong>{i.item}:</strong> Install new {i.desc}.</li> : null)}
                             <li>Installation includes all necessary labor and miscellaneous materials.</li>
                             <li>Removal and responsible disposal of existing equipment.</li>
                             <li>System testing and commissioning to ensure proper operation.</li>
@@ -590,7 +587,7 @@
                             </Card>
                             <ProposalDisplay packages={packages} onPrint={handlePrint} />
                         </main>
-                        <div className="hidden">
+                        <div className="printable-area">
                             <PrintableProposal pkg={packageToPrint} details={details} ref={printRef} />
                         </div>
                     </div>
