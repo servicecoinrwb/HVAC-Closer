@@ -383,7 +383,7 @@
         };
         
         const DuctworkCalculator = ({ details, setDetails }) => {
-            const [ducts, setDucts] = useState([{ type: 'round', dim1: 8, dim2: '' }]);
+            const [ducts, setDucts] = useState([{ type: 'round', dim1: 8, dim2: '', length: '' }]);
             const [totalCFM, setTotalCFM] = useState(0);
             const AIR_VELOCITY = 700; // FPM
 
@@ -398,7 +398,7 @@
             };
 
             const addDuct = () => {
-                setDucts([...ducts, { type: 'round', dim1: 8, dim2: '' }]);
+                setDucts([...ducts, { type: 'round', dim1: 8, dim2: '', length: '' }]);
             };
             
             const removeDuct = (index) => {
@@ -432,7 +432,10 @@
                             <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center bg-gray-50 p-2 rounded-md">
                                 <SelectField name="type" value={duct.type} onChange={e => handleDuctChange(index, 'type', e.target.value)} options={[{value: 'round', label: 'Round'}, {value: 'rectangular', label: 'Rectangular'}]} />
                                 {duct.type === 'round' ? (
-                                    <InputField type="number" name="dim1" value={duct.dim1} onChange={e => handleDuctChange(index, 'dim1', e.target.value)} placeholder="Diameter (in)" />
+                                    <>
+                                        <InputField type="number" name="dim1" value={duct.dim1} onChange={e => handleDuctChange(index, 'dim1', e.target.value)} placeholder="Diameter (in)" />
+                                        <InputField type="number" name="length" value={duct.length} onChange={e => handleDuctChange(index, 'length', e.target.value)} placeholder="Length (ft)" />
+                                    </>
                                 ) : (
                                     <>
                                         <InputField type="number" name="dim1" value={duct.dim1} onChange={e => handleDuctChange(index, 'dim1', e.target.value)} placeholder="Length (in)" />
@@ -472,7 +475,7 @@
             return (
                 <div id="proposalSection">
                     <Card>
-                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">8</span> Your Custom Proposal</h2>
+                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span> Your Custom Proposal</h2>
                         <p className="text-gray-600 mb-6">Here are three tailored options. Please select one to proceed to the signature and download.</p>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {packages.map((pkg, index) => (
@@ -529,7 +532,7 @@
             return (
                 <Card>
                     <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">9</span> On-Screen Financing Calculator
+                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">8</span> On-Screen Financing Calculator
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                         <SelectField label="Select a Package to Calculate" onChange={e => setSelectedPackage(packages[e.target.value])} options={[
@@ -665,7 +668,9 @@
                                 <p className="text-sm text-gray-600">Customer Signature</p>
                             </div>
                             <div className="text-right">
-                                <div className="h-24 border-b border-gray-400"></div>
+                                <div className="h-24 border-b border-gray-400 flex items-end justify-center pb-1">
+                                    <p className="font-semibold">{today}</p>
+                                </div>
                                 <p className="text-sm text-gray-600">Date</p>
                             </div>
                         </div>
@@ -1097,7 +1102,7 @@
                                 <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span> Generate Proposal</h2>
                                 <Button onClick={handleGeneratePackages} className="btn-lg"><Icon name="settings" className="mr-2 h-5 w-5" />Build System Options</Button>
                             </Card>
-                            <ProposalDisplay packages={packages} onSelect={setSelectedPackage} selectedPackage={selectedPackage} isGeneratingPdf={isGeneratingPdf} />
+                            <ProposalDisplay packages={packages} onSelect={setSelectedPackage} selectedPackage={selectedPackage} onPrint={handlePrint} isGeneratingPdf={isGeneratingPdf} />
                             {details.includeFinancing && packages.length > 0 && <FinancingCalculator packages={packages} />}
                             {packages.length > 0 && <SignaturePad onSave={handlePrint} selectedPackage={selectedPackage} isGeneratingPdf={isGeneratingPdf} />}
                         </main>
