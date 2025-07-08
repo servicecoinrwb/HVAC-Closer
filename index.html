@@ -55,17 +55,6 @@
             border-color: #2563eb;
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
         }
-        .tab {
-            padding: 0.75rem 1.25rem;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            color: #6b7280;
-            font-weight: 500;
-        }
-        .tab.active {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
-        }
         .proposal-card {
             border: 2px solid #e5e7eb;
             transition: all 0.3s ease;
@@ -107,8 +96,8 @@
         <main>
             <!-- Step 1: Customer & Home Info -->
             <div class="card">
-                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span> Customer & Home Evaluation</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span> Job Details</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div>
                         <label for="customerName" class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
                         <input type="text" id="customerName" class="input-field" placeholder="e.g., John Doe">
@@ -118,8 +107,13 @@
                         <input type="text" id="customerAddress" class="input-field" placeholder="e.g., 123 Main St, Anytown">
                     </div>
                     <div>
-                        <label for="homeSqFt" class="block text-sm font-medium text-gray-700 mb-1">Home Square Footage</label>
-                        <input type="number" id="homeSqFt" class="input-field" placeholder="e.g., 2000">
+                        <label for="jobType" class="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
+                        <select id="jobType" class="input-field">
+                            <option value="furnace_ac">Furnace & AC</option>
+                            <option value="heatpump_airhandler">Heat Pump & Air Handler</option>
+                            <option value="ac_only">AC Only</option>
+                            <option value="furnace_only">Furnace Only</option>
+                        </select>
                     </div>
                     <div>
                         <label for="systemSize" class="block text-sm font-medium text-gray-700 mb-1">Required System Size (Tons)</label>
@@ -134,7 +128,15 @@
                             <option value="5">5 Tons</option>
                         </select>
                     </div>
-                    <div class="md:col-span-2">
+                    <div>
+                        <label for="laborHours" class="block text-sm font-medium text-gray-700 mb-1">Estimated Labor (Hours)</label>
+                        <input type="number" id="laborHours" class="input-field" placeholder="e.g., 8">
+                    </div>
+                    <div>
+                        <label for="miscMaterials" class="block text-sm font-medium text-gray-700 mb-1">Misc. Materials Cost ($)</label>
+                        <input type="number" id="miscMaterials" class="input-field" placeholder="e.g., 450">
+                    </div>
+                    <div class="lg:col-span-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Customer Priorities (Select all that apply)</label>
                         <div class="flex flex-wrap gap-3 mt-2">
                             <button class="priority-btn btn btn-secondary" data-priority="Energy Savings"><i data-lucide="zap" class="mr-2 h-4 w-4"></i>Energy Savings</button>
@@ -201,49 +203,23 @@
     <script>
         const equipmentData = {
             "furnaces": {
-                "modulating": [
-                    {"item": "G97CMN0601714A", "desc": "97% 3-1/2T 60mbh Modulating Ion", "price": 3703.94},
-                    {"item": "G97CMN0801714A", "desc": "97% 3-1/2T 80mbh Modulating Ion", "price": 3887.17},
-                    {"item": "G97CMN0802120A", "desc": "97% 5T 80mbh Modulating Ion", "price": 4185.49},
-                    {"item": "G97CMN1002122A", "desc": "97% 5-1/2T 100mbh Modulating Ion", "price": 4408.09},
-                    {"item": "G97CMN1202422A", "desc": "97% 5-1/2T 120mbh Modulating Ion", "price": 4642.80}
-                ],
-                "2-stage": [
-                    {"item": "G96CTN0601714A", "desc": "96% 3-1/2T 60mbh 2-Stage Ion", "price": 3027.06},
-                    {"item": "G96CTN0801714A", "desc": "96% 3-1/2T 80mbh 2-Stage Ion", "price": 3205.74},
-                    {"item": "G96CTN0802120A", "desc": "96% 5T 80mbh 2-Stage Ion", "price": 3514.66},
-                    {"item": "G96CTN1002122A", "desc": "96% 5-1/2T 100mbh 2-Stage Ion", "price": 3732.71},
-                    {"item": "G96CTN1202422A", "desc": "96% 5-1/2T 120mbh 2-Stage Ion", "price": 3976.51}
-                ],
-                "performance": [
-                    {"item": "N95ESN0601714A", "desc": "96% 3-1/2T 60mbh ECM Performance", "price": 2018.54},
-                    {"item": "N95ESN0801716A", "desc": "96% 4T 80mbh ECM Performance", "price": 2186.63},
-                    {"item": "N95ESN0802120A", "desc": "96% 5T 80mbh ECM Performance", "price": 2206.31},
-                    {"item": "N95ESN1002122A", "desc": "96% 5T 100mbh ECM Performance", "price": 2415.29},
-                    {"item": "N95ESN1202422A", "desc": "96% 5-1/2T 120mbh ECM Performance", "price": 2522.80}
-                ]
+                "modulating": [{"item": "G97CMN0801714A", "desc": "97% 3-1/2T 80mbh Modulating Ion", "price": 3887.17}],
+                "2-stage": [{"item": "G96CTN0801714A", "desc": "96% 3-1/2T 80mbh 2-Stage Ion", "price": 3205.74}],
+                "performance": [{"item": "N95ESN0801716A", "desc": "96% 4T 80mbh ECM Performance", "price": 2186.63}]
             },
             "ac": {
-                "variable-speed": [
-                    {"item": "HVA924GK", "desc": "2T Varispeed 19 SEER2 Ion", "size": 2, "price": 4456.54},
-                    {"item": "HVA936GK", "desc": "3T Varispeed 19 SEER2 Ion", "size": 3, "price": 5421.14},
-                    {"item": "HVA948GK", "desc": "4T Varispeed 19 SEER2 Ion", "size": 4, "price": 5907.23},
-                    {"item": "HVA960GK", "desc": "5T Varispeed 19 SEER2 Ion", "size": 5, "price": 6552.31}
-                ],
-                "2-stage": [
-                    {"item": "N4A7T24AKA", "desc": "2T 17 SEER2 2-Stage", "size": 2, "price": 2680.29},
-                    {"item": "N4A7T36AKA", "desc": "3T 17 SEER2 2-Stage", "size": 3, "price": 3198.17},
-                    {"item": "N4A7T48AKA", "desc": "4T 17 SEER2 2-Stage", "size": 4, "price": 3922.00},
-                    {"item": "N4A7T60AKA", "desc": "5T 17 SEER2 2-Stage", "size": 5, "price": 4417.17}
-                ],
-                "1-stage-16": [
-                    {"item": "N4A5S18AKA", "desc": "1.5T 16 SEER2 1-Stage", "size": 1.5, "price": 1962.51},
-                    {"item": "N4A5S24AKA", "desc": "2T 16 SEER2 1-Stage", "size": 2, "price": 2113.94},
-                    {"item": "N4A5S30AKA", "desc": "2.5T 16 SEER2 1-Stage", "size": 2.5, "price": 2277.49},
-                    {"item": "N4A5S36AKA", "desc": "3T 16 SEER2 1-Stage", "size": 3, "price": 2613.66},
-                    {"item": "N4A5S48AKA", "desc": "4T 15 SEER2 1-Stage", "size": 4, "price": 3310.23},
-                    {"item": "N4A5S60AKA", "desc": "5T 15 SEER2 1-Stage", "size": 5, "price": 3793.29}
-                ]
+                "variable-speed": [{"item": "HVA936GK", "desc": "3T Varispeed 19 SEER2 Ion", "size": 3, "price": 5421.14}],
+                "2-stage": [{"item": "N4A7T36AKA", "desc": "3T 17 SEER2 2-Stage", "size": 3, "price": 3198.17}],
+                "1-stage-16": [{"item": "N4A5S36AKA", "desc": "3T 16 SEER2 1-Stage", "size": 3, "price": 2613.66}]
+            },
+             "heatPumps": {
+                "variable-speed": [{"item": "HVH836GKA", "desc": "3T Varispeed 19 SEER2 HP", "size": 3, "price": 7694.46}],
+                "2-stage": [{"item": "N4H7T36AKAAA", "desc": "3T 17 SEER2 2-Stage HP", "size": 3, "price": 5913.29}],
+                "1-stage-15": [{"item": "N4H5S36AKAAA", "desc": "3T 15 SEER 1-Stage HP", "size": 3, "price": 4790.82}]
+            },
+            "fanCoils": {
+                 "communicating": [{"item": "FCM4X3600AL", "desc": "3T Communicating Fan Coil", "size": 3, "price": 2984.66}],
+                 "ecm-5-speed": [{"item": "FJMA4X36L0BB", "desc": "3T ECM 5-Speed Fan Coil", "size": 3, "price": 2233.57}]
             },
             "coils": [
                 {"item": "EVD4X18M14A", "size": 1.5, "price": 651.14},
@@ -260,19 +236,20 @@
         };
 
         function initializeApp() {
-            // This function contains all the application logic.
-            // It will only be called once lucide is confirmed to be loaded.
-            
             lucide.createIcons();
 
             const buildSystemBtn = document.getElementById('buildSystemBtn');
             const proposalSection = document.getElementById('proposalSection');
             const proposalOutput = document.getElementById('proposalOutput');
             const systemSizeSelect = document.getElementById('systemSize');
+            const jobTypeSelect = document.getElementById('jobType');
+            const laborHoursInput = document.getElementById('laborHours');
+            const miscMaterialsInput = document.getElementById('miscMaterials');
             const priorityBtns = document.querySelectorAll('.priority-btn');
             const calculatePaymentBtn = document.getElementById('calculatePaymentBtn');
             const resetBtn = document.getElementById('resetBtn');
 
+            const LABOR_RATE = 125; 
             let selectedPriorities = [];
             
             priorityBtns.forEach(btn => {
@@ -291,12 +268,16 @@
 
             buildSystemBtn.addEventListener('click', () => {
                 const tonnage = parseFloat(systemSizeSelect.value);
-                if (!tonnage) {
+                const laborHours = parseFloat(laborHoursInput.value) || 0;
+                const miscMaterials = parseFloat(miscMaterialsInput.value) || 0;
+                const jobType = jobTypeSelect.value;
+
+                if (!tonnage && jobType !== 'furnace_only') {
                     alert('Please select a system size.');
                     return;
                 }
                 
-                generateProposal(tonnage);
+                generateProposal(jobType, tonnage, laborHours, miscMaterials);
                 proposalSection.classList.remove('hidden');
             });
 
@@ -322,8 +303,10 @@
             resetBtn.addEventListener('click', () => {
                 document.getElementById('customerName').value = '';
                 document.getElementById('customerAddress').value = '';
-                document.getElementById('homeSqFt').value = '';
+                jobTypeSelect.value = 'furnace_ac';
                 systemSizeSelect.value = '';
+                laborHoursInput.value = '';
+                miscMaterialsInput.value = '';
                 proposalSection.classList.add('hidden');
                 proposalOutput.innerHTML = '';
                 document.getElementById('paymentResult').classList.add('hidden');
@@ -339,51 +322,46 @@
                 return arr.reduce((prev, curr) => Math.abs(curr.size - size) < Math.abs(prev.size - size) ? curr : prev);
             }
 
-            function generateProposal(tonnage) {
-                const furnaceGood = equipmentData.furnaces.performance[1];
-                const furnaceBetter = equipmentData.furnaces['2-stage'][1];
-                const furnaceBest = equipmentData.furnaces.modulating[1];
-
-                const acGood = findClosest(equipmentData.ac['1-stage-16'], tonnage);
-                const acBetter = findClosest(equipmentData.ac['2-stage'], tonnage);
-                const acBest = findClosest(equipmentData.ac['variable-speed'], tonnage);
-
-                const coilGood = findClosest(equipmentData.coils, acGood.size);
-                const coilBetter = findClosest(equipmentData.coils, acBetter.size);
-                const coilBest = findClosest(equipmentData.coils, acBest.size);
-                
+            function generateProposal(jobType, tonnage, laborHours, miscMaterials) {
+                let packages = [];
                 const thermostat = equipmentData.accessories.thermostat;
 
-                const goodPackage = {
-                    title: "Performance",
-                    level: "Good",
-                    color: "gray",
-                    items: [furnaceGood, acGood, coilGood],
-                    features: ["Reliable Operation", "Standard Efficiency", "Budget-Friendly"]
-                };
+                switch (jobType) {
+                    case 'furnace_ac':
+                        packages = [
+                            { title: "Performance", level: "Good", color: "gray", items: [equipmentData.furnaces.performance[0], findClosest(equipmentData.ac['1-stage-16'], tonnage), findClosest(equipmentData.coils, tonnage)], features: ["Reliable Operation", "Standard Efficiency", "Budget-Friendly"] },
+                            { title: "Comfort Series", level: "Better", color: "blue", items: [equipmentData.furnaces['2-stage'][0], findClosest(equipmentData.ac['2-stage'], tonnage), findClosest(equipmentData.coils, tonnage), thermostat], features: ["Enhanced Comfort", "Higher Energy Savings", "Quieter Operation", "Advanced Control"] },
+                            { title: "Ion Ultimate", level: "Best", color: "indigo", items: [equipmentData.furnaces.modulating[0], findClosest(equipmentData.ac['variable-speed'], tonnage), findClosest(equipmentData.coils, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Comfort Control", "Whisper-Quiet Performance", "Smart Communicating System"] }
+                        ];
+                        break;
+                    case 'heatpump_airhandler':
+                        packages = [
+                             { title: "Performance HP", level: "Good", color: "gray", items: [findClosest(equipmentData.heatPumps['1-stage-15'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage)], features: ["Reliable All-in-One System", "Standard Efficiency", "Budget-Friendly"] },
+                             { title: "Comfort Series HP", level: "Better", color: "blue", items: [findClosest(equipmentData.heatPumps['2-stage'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage), thermostat], features: ["Enhanced Comfort & Dehumidification", "Higher Energy Savings", "Advanced Control"] },
+                             { title: "Ion Ultimate HP", level: "Best", color: "indigo", items: [findClosest(equipmentData.heatPumps['variable-speed'], tonnage), findClosest(equipmentData.fanCoils.communicating, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Comfort Control", "Whisper-Quiet Performance", "Smart Communicating System"] }
+                        ];
+                        break;
+                    case 'ac_only':
+                         packages = [
+                            { title: "Performance AC", level: "Good", color: "gray", items: [findClosest(equipmentData.ac['1-stage-16'], tonnage), findClosest(equipmentData.coils, tonnage)], features: ["Reliable Cooling", "Standard Efficiency", "Budget-Friendly"] },
+                            { title: "Comfort Series AC", level: "Better", color: "blue", items: [findClosest(equipmentData.ac['2-stage'], tonnage), findClosest(equipmentData.coils, tonnage), thermostat], features: ["Enhanced Dehumidification", "Higher Energy Savings", "Quieter Operation"] },
+                            { title: "Ion Ultimate AC", level: "Best", color: "indigo", items: [findClosest(equipmentData.ac['variable-speed'], tonnage), findClosest(equipmentData.coils, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Cooling Comfort", "Whisper-Quiet Performance"] }
+                        ];
+                        break;
+                    case 'furnace_only':
+                         packages = [
+                            { title: "Performance Furnace", level: "Good", color: "gray", items: [equipmentData.furnaces.performance[0]], features: ["Reliable Heating", "Standard Efficiency", "Budget-Friendly"] },
+                            { title: "Comfort Series Furnace", level: "Better", color: "blue", items: [equipmentData.furnaces['2-stage'][0], thermostat], features: ["Consistent Temperatures", "Higher Energy Savings", "Quieter Operation"] },
+                            { title: "Ion Ultimate Furnace", level: "Best", color: "indigo", items: [equipmentData.furnaces.modulating[0], thermostat], features: ["Maximum Energy Savings", "Ultimate Heating Comfort", "Precise Temperature Control"] }
+                        ];
+                        break;
+                }
 
-                const betterPackage = {
-                    title: "Comfort Series",
-                    level: "Better",
-                    color: "blue",
-                    items: [furnaceBetter, acBetter, coilBetter, thermostat],
-                    features: ["Enhanced Comfort", "Higher Energy Savings", "Quieter Operation", "Advanced Control"]
-                };
-                
-                const bestPackage = {
-                    title: "Ion Ultimate",
-                    level: "Best",
-                    color: "indigo",
-                    items: [furnaceBest, acBest, coilBest, thermostat],
-                    features: ["Maximum Energy Savings", "Ultimate Comfort Control", "Whisper-Quiet Performance", "Smart Communicating System"]
-                };
-
-                const packages = [goodPackage, betterPackage, bestPackage];
                 proposalOutput.innerHTML = '';
-
                 packages.forEach(pkg => {
-                    const totalCost = pkg.items.reduce((sum, item) => sum + item.price, 0);
-                    const finalPrice = totalCost + 2500; 
+                    const equipmentTotal = pkg.items.reduce((sum, item) => sum + item.price, 0);
+                    const laborTotal = laborHours * LABOR_RATE;
+                    const finalPrice = equipmentTotal + laborTotal + miscMaterials;
 
                     const cardHTML = `
                         <div class="card proposal-card ${pkg.level.toLowerCase()}">
@@ -415,19 +393,15 @@
             }
         }
 
-        // This function will wait until the `lucide` object is available on the window,
-        // then it will call the main initializeApp function.
         function waitForLucide() {
             if (typeof lucide !== 'undefined') {
                 initializeApp();
             } else {
-                setTimeout(waitForLucide, 50); // Check again in 50ms
+                setTimeout(waitForLucide, 50);
             }
         }
 
-        // Start the process
         waitForLucide();
-
     </script>
 </body>
 </html>
