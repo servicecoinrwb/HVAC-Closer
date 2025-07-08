@@ -380,8 +380,8 @@
                                     <InputField type="number" name="dim1" value={duct.dim1} onChange={e => handleDuctChange(index, 'dim1', e.target.value)} placeholder="Diameter (in)" />
                                 ) : (
                                     <>
-                                        <InputField type="number" name="dim1" value={duct.dim1} onChange={e => handleDuctChange(index, 'dim1', e.target.value)} placeholder="Width (in)" />
-                                        <InputField type="number" name="dim2" value={duct.dim2} onChange={e => handleDuctChange(index, 'dim2', e.target.value)} placeholder="Height (in)" />
+                                        <InputField type="number" name="dim1" value={duct.dim1} onChange={e => handleDuctChange(index, 'dim1', e.target.value)} placeholder="Length (in)" />
+                                        <InputField type="number" name="dim2" value={duct.dim2} onChange={e => handleDuctChange(index, 'dim2', e.target.value)} placeholder="Width (in)" />
                                     </>
                                 )}
                                 <Button onClick={() => removeDuct(index)} variant="secondary" className="bg-red-100 text-red-600 hover:bg-red-200"><Icon name="trash" /></Button>
@@ -459,7 +459,6 @@
         
         const FinancingCalculator = ({ packages }) => {
             const [selectedPackage, setSelectedPackage] = useState(null);
-            const [monthlyPayment, setMonthlyPayment] = useState(null);
             
             const calculatePayment = (price, term) => {
                 const interestRate = 0.0999;
