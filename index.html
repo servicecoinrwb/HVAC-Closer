@@ -417,7 +417,7 @@
             return (
                 <div id="proposalSection">
                     <Card>
-                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span> Your Custom Proposal</h2>
+                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span> Your Custom Proposal</h2>
                         <p className="text-gray-600 mb-6">Here are three tailored options. Select one to generate a printable quote.</p>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {packages.map((pkg, index) => (
@@ -456,6 +456,49 @@
                 </div>
             );
         };
+        
+        const FinancingCalculator = ({ packages }) => {
+            const [selectedPackage, setSelectedPackage] = useState(null);
+            const [monthlyPayment, setMonthlyPayment] = useState(null);
+            
+            const calculatePayment = (price, term) => {
+                const interestRate = 0.0999;
+                const monthlyRate = interestRate / 12;
+                const numberOfPayments = term * 12;
+                const payment = price * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+                return payment.toFixed(2);
+            };
+
+            if (packages.length === 0) return null;
+
+            return (
+                <Card>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span> On-Screen Financing Calculator
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <SelectField label="Select a Package to Calculate" onChange={e => setSelectedPackage(packages[e.target.value])} options={[
+                            {value: '', label: 'Select a package...'},
+                            ...packages.map((p, i) => ({value: i, label: `${p.title} - $${p.finalPrice.toFixed(2)}`}))
+                        ]}/>
+                         {selectedPackage && (
+                            <div className="mt-4 md:mt-0">
+                                <h3 className="font-semibold text-center">Estimated Monthly Payments for {selectedPackage.title}</h3>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-center mt-2">
+                                    {[3, 5, 7, 10].map(term => (
+                                        <div key={term} className="bg-gray-100 p-2 rounded-md">
+                                            <p className="text-sm font-bold">{term} Years</p>
+                                            <p className="text-lg text-blue-600 font-semibold">${calculatePayment(selectedPackage.finalPrice, term)}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </Card>
+            );
+        };
+
 
         const PrintableProposal = forwardRef(({ pkg, details }, ref) => {
             if (!pkg) return null;
@@ -892,6 +935,7 @@
                                 <Button onClick={handleGeneratePackages} className="btn-lg"><Icon name="settings" className="mr-2 h-5 w-5" />Build System Options</Button>
                             </Card>
                             <ProposalDisplay packages={packages} onPrint={handlePrint} isGeneratingPdf={isGeneratingPdf} />
+                            {packages.length > 0 && <FinancingCalculator packages={packages} />}
                         </main>
                         <div className="printable-area">
                             <PrintableProposal pkg={packageToPrint} details={details} ref={printableRef} />
