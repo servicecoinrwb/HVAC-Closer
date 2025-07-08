@@ -29,11 +29,11 @@
             transition: all 0.2s ease-in-out;
             cursor: pointer;
         }
-        .btn-primary {
+        .btn-primary, .priority-btn.active {
             background-color: #2563eb;
             color: white;
         }
-        .btn-primary:hover {
+        .btn-primary:hover, .priority-btn.active:hover {
             background-color: #1d4ed8;
         }
         .btn-secondary {
@@ -74,6 +74,17 @@
             border-radius: 9999px;
             font-size: 0.875rem;
             font-weight: 500;
+        }
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
         }
         #printableProposal {
             display: none;
@@ -415,7 +426,6 @@
             // --- State Variables ---
             const LABOR_RATE = 125; 
             let generatedPackages = [];
-            let selectedPriorities = [];
             let currentCalcMode = 'quick';
             let calculatedTonnage = null;
 
@@ -423,8 +433,7 @@
             priorityBtns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    btn.classList.toggle('btn-secondary');
-                    btn.classList.toggle('btn-primary');
+                    btn.classList.toggle('active');
                 });
             });
 
@@ -485,8 +494,7 @@
                 document.getElementById('paymentResult').classList.add('hidden');
                 document.getElementById('loanAmount').value = '';
                 priorityBtns.forEach(btn => {
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-secondary');
+                    btn.classList.remove('active');
                 });
                 manualJResult.classList.add('hidden');
             }
