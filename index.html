@@ -126,6 +126,8 @@
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <InputField label="Customer Name" name="customerName" value={details.customerName} onChange={handleChange} placeholder="e.g., John Doe" />
                         <InputField label="Address" name="customerAddress" value={details.customerAddress} onChange={handleChange} placeholder="e.g., 123 Main St, Anytown" />
+                        <InputField label="Email Address" name="email" value={details.email} onChange={handleChange} placeholder="e.g., john.doe@email.com" type="email" />
+                        <InputField label="Phone Number" name="phone" value={details.phone} onChange={handleChange} placeholder="e.g., (555) 123-4567" type="tel" />
                         <SelectField label="Job Type" name="jobType" value={details.jobType} onChange={handleChange} options={[
                             { value: 'furnace_ac', label: 'Furnace & AC' },
                             { value: 'heatpump_airhandler', label: 'Heat Pump & Air Handler' },
@@ -369,6 +371,8 @@
                             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Prepared For</h3>
                             <p className="font-bold text-gray-800">{details.customerName || 'Valued Customer'}</p>
                             <p className="text-gray-600">{details.customerAddress || 'N/A'}</p>
+                             {details.email && <p className="text-gray-600">{details.email}</p>}
+                            {details.phone && <p className="text-gray-600">{details.phone}</p>}
                         </div>
                         <div className="text-right">
                             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Date</h3>
@@ -410,6 +414,7 @@
                     )}
                     <footer className="text-center text-xs text-gray-400 pt-6 border-t">
                         <p>Thank you for the opportunity to earn your business. This proposal is valid for 30 days.</p>
+                        <p>Powered by Service Coin</p>
                     </footer>
                 </div>
             );
@@ -418,7 +423,7 @@
         // --- Main App Component ---
         function App() {
             const [details, setDetails] = useState({
-                customerName: '', customerAddress: '', jobType: 'furnace_ac', systemSize: '',
+                customerName: '', customerAddress: '', email: '', phone: '', jobType: 'furnace_ac', systemSize: '',
                 laborHours: '8', miscMaterials: '450', priorities: [],
                 addons: [], accessDifficulty: '1', notes: '', photos: []
             });
@@ -455,7 +460,7 @@
                                 setIsGeneratingPdf(false);
                                 setPackageToPrint(null);
                             });
-                    }, 200); // A short delay to ensure the component renders fully
+                    }, 200);
                 }
             }, [packageToPrint]);
 
@@ -656,7 +661,7 @@
 
             const handleReset = () => {
                 setDetails({
-                    customerName: '', customerAddress: '', jobType: 'furnace_ac', systemSize: '',
+                    customerName: '', customerAddress: '', email: '', phone: '', jobType: 'furnace_ac', systemSize: '',
                     laborHours: '8', miscMaterials: '450', priorities: [], addons: [], 
                     accessDifficulty: '1', notes: '', photos: []
                 });
