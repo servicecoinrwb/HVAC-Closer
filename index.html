@@ -17,7 +17,12 @@
             background-color: #f3f4f6;
         }
         .printable-area {
-            display: none;
+            position: absolute;
+            left: -9999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
         }
         @media print {
             body > *:not(.printable-area) {
@@ -25,10 +30,10 @@
             }
             .printable-area {
                 display: block;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
+                position: static;
+                width: auto;
+                height: auto;
+                overflow: visible;
             }
         }
     </style>
@@ -355,6 +360,13 @@
             const [packages, setPackages] = useState([]);
             const [packageToPrint, setPackageToPrint] = useState(null);
             const printRef = useRef();
+            
+            useEffect(() => {
+                if (packageToPrint) {
+                    window.print();
+                    setPackageToPrint(null);
+                }
+            }, [packageToPrint]);
 
             const equipmentData = {
                 "furnaces": {
@@ -542,10 +554,6 @@
 
             const handlePrint = (pkg) => {
                 setPackageToPrint(pkg);
-                setTimeout(() => {
-                    window.print();
-                    setPackageToPrint(null);
-                }, 100);
             };
 
             const handleTonnageCalculated = (tons) => {
