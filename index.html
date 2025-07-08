@@ -133,6 +133,7 @@
                             { value: 'heatpump_airhandler', label: 'Heat Pump & Air Handler' },
                             { value: 'airhandler_ac', label: 'Air Handler & AC' },
                             { value: 'ductless', label: 'Ductless Mini-Split' },
+                            { value: 'boiler', label: 'Boiler Only' },
                             { value: 'ac_only', label: 'AC Only' },
                             { value: 'furnace_only', label: 'Furnace Only' },
                         ]} />
@@ -584,6 +585,31 @@
                         { "item": "D5MAHAQ06XA3", "desc": "HP Wall Unit 6mbh", "size": 0.5, "price": 552.67 }
                     ]
                 },
+                "boilers": {
+                    "steam": [
+                        { "item": "BS2AAN000299", "desc": "Boiler Steam Spark Ignition 299mbh", "size": 25, "price": 5309.08 },
+                        { "item": "BS2AAN000262", "desc": "Boiler Steam Spark Ignition 262mbh", "size": 22, "price": 4708.62 },
+                        { "item": "BS2AAN000225", "desc": "Boiler Steam Spark Ignition 225mbh", "size": 18.75, "price": 4367.54 },
+                        { "item": "BS2AAN000187", "desc": "Boiler Steam Spark Ignition 187mbh", "size": 15.5, "price": 3926.31 },
+                        { "item": "BS2AAN000150", "desc": "Boiler Steam Spark Ignition 150mbh", "size": 12.5, "price": 3657.69 },
+                        { "item": "BS2AAN000112", "desc": "Boiler Steam Spark Ignition 112mbh", "size": 9.3, "price": 3221.08 }
+                    ],
+                    "wall_hung": [
+                        { "item": "PNHB0044LZ003", "desc": "150 Wall Hung Condensing Boiler", "size": 12.5, "price": 2143.59 },
+                        { "item": "PNHB0033LZ002", "desc": "110 Wall Hung Condensing Boiler", "size": 9, "price": 1988.46 },
+                        { "item": "PNHB0023LZ002", "desc": "80 Wall Hung Condensing Boiler", "size": 6.7, "price": 1833.33 },
+                        { "item": "PNHB0016LZ002", "desc": "55 Wall Hung Condensing Boiler", "size": 4.5, "price": 1678.21 }
+                    ],
+                    "combi": [
+                         { "item": "PNFC0000058K003", "desc": "Fire Tube Wall Combi 199 H 210 DHW", "size": 16.5, "price": 3007.69 },
+                         { "item": "PNFC0000051K004", "desc": "Fire Tube Wall Combi 175 H 210 DHW", "size": 14.5, "price": 2866.67 },
+                         { "item": "PNCB0062LD002", "desc": "Combi Boiler 150 Heat 250 DHW", "size": 12.5, "price": 2724.36 },
+                         { "item": "PNCB0058LD008", "desc": "Combi Boiler 110 Heat 240 DHW", "size": 9, "price": 2439.74 },
+                         { "item": "PNCB0058LD007", "desc": "Combi Boiler 130 Heat 240 DHW", "size": 10.8, "price": 2582.05 },
+                         { "item": "PNCB0047LD003", "desc": "Combi Boiler 80 Heat 190 DHW", "size": 6.7, "price": 2297.44 },
+                         { "item": "PNCB0047LD004", "desc": "Combi Boiler 60 Heat 190 DHW", "size": 5, "price": 2091.03 }
+                    ]
+                },
                 "accessories": {
                     "thermostat": {"item": "SYST0101CW", "desc": "Ion Wall Control WiFi Touchscreen", "price": 747.21},
                     "humidifier": { "item": "HUMXX", "desc": "Whole-Home Humidifier", "price": 850.00 },
@@ -609,7 +635,7 @@
 
             const handleGeneratePackages = () => {
                 const tonnage = parseFloat(details.systemSize);
-                if (!tonnage && details.jobType !== 'furnace_only') {
+                if (!tonnage && details.jobType !== 'furnace_only' && details.jobType !== 'boiler') {
                     alert('Please select a system size.');
                     return;
                 }
@@ -646,6 +672,13 @@
                             { title: "Ductless HH Series", level: "Good", color: "gray", items: [findClosest(equipmentData.ductless.condensers_hh, tonnage), findClosest(equipmentData.ductless.wall_units, tonnage)], features: ["Efficient Point-of-Use Heating & Cooling", "Great for Additions or Problem Areas", "Standard Efficiency"] },
                             { title: "Ductless LH Series", level: "Better", color: "blue", items: [findClosest(equipmentData.ductless.condensers_lh, tonnage), findClosest(equipmentData.ductless.wall_units, tonnage)], features: ["Superior Low-Temp Heating Performance", "Higher Efficiency", "Ideal for Colder Climates"] },
                             { title: "Ductless Premium LH", level: "Best", color: "indigo", items: [findClosest(equipmentData.ductless.condensers_lh, tonnage), findClosest(equipmentData.ductless.wall_units, tonnage), thermostat], features: ["Top-Tier Low-Temp Performance", "Maximum Energy Savings", "Advanced Smart Control"] }
+                        ];
+                        break;
+                    case 'boiler':
+                         newPackages = [
+                            { title: "Wall Hung Condensing Boiler", level: "Good", color: "gray", items: [equipmentData.boilers.wall_hung[2]], features: ["High-Efficiency Heating", "Space-Saving Design", "Reliable Performance"] },
+                            { title: "Combi Boiler", level: "Better", color: "blue", items: [equipmentData.boilers.combi[2], thermostat], features: ["Heating & Hot Water in One Unit", "Excellent Efficiency", "Advanced Controls"] },
+                            { title: "Steam Boiler", level: "Best", color: "indigo", items: [equipmentData.boilers.steam[2], thermostat], features: ["Powerful Steam Heating", "Ideal for Older Radiator Systems", "Durable Cast-Iron Construction"] }
                         ];
                         break;
                     case 'ac_only':
