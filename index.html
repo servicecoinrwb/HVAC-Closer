@@ -61,7 +61,8 @@
                 printer: <><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></>,
                 check: <polyline points="20 6 9 17 4 12" />,
                 plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>,
-                camera: <><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></>
+                camera: <><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></>,
+                trash: <><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>
             };
             return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{icons[name] || <circle cx="12" cy="12" r="10" />}</svg>;
         };
@@ -246,7 +247,7 @@
 
         const ManualJCalculator = ({ onTonnageCalculated }) => {
             const [mode, setMode] = useState('quick');
-            const [inputs, setInputs] = useState({ sqft: '', insulation: 'average', ceilingHeight: 8 });
+            const [inputs, setInputs] = useState({ sqft: '', insulation: 'average', ceilingHeight: 8, windowType: 'double', occupants: 2 });
             const [results, setResults] = useState(null);
 
             const handleChange = (e) => {
@@ -284,15 +285,32 @@
                         <button onClick={() => setMode('quick')} className={`tab ${mode === 'quick' ? 'active' : ''}`}>Quick Mode</button>
                         <button onClick={() => setMode('full')} className={`tab ${mode === 'full' ? 'active' : ''}`}>Full Mode</button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <InputField name="sqft" value={inputs.sqft} onChange={handleChange} placeholder="Square Footage" />
-                        <SelectField name="insulation" value={inputs.insulation} onChange={handleChange} options={[
-                            { value: 'average', label: 'Average Insulation' },
-                            { value: 'poor', label: 'Poor Insulation' },
-                            { value: 'good', label: 'Good Insulation' }
-                        ]} />
-                        {mode === 'full' && <InputField name="ceilingHeight" value={inputs.ceilingHeight} onChange={handleChange} placeholder="Ceiling Height (ft)" />}
-                    </div>
+                    {mode === 'quick' ? (
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <InputField label="Square Footage" name="sqft" value={inputs.sqft} onChange={handleChange} placeholder="e.g., 2000" />
+                            <SelectField label="Insulation Quality" name="insulation" value={inputs.insulation} onChange={handleChange} options={[
+                                { value: 'average', label: 'Average' },
+                                { value: 'poor', label: 'Poor' },
+                                { value: 'good', label: 'Good' }
+                            ]} />
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <InputField label="Square Footage" name="sqft" value={inputs.sqft} onChange={handleChange} placeholder="e.g., 2000" />
+                            <InputField label="Ceiling Height (ft)" type="number" name="ceilingHeight" value={inputs.ceilingHeight} onChange={handleChange} />
+                             <SelectField label="Insulation Quality" name="insulation" value={inputs.insulation} onChange={handleChange} options={[
+                                { value: 'average', label: 'Average' },
+                                { value: 'poor', label: 'Poor' },
+                                { value: 'good', label: 'Good' }
+                            ]} />
+                            <SelectField label="Window Type" name="windowType" value={inputs.windowType} onChange={handleChange} options={[
+                                { value: 'single', label: 'Single Pane' },
+                                { value: 'double', label: 'Double Pane' },
+                                { value: 'lowe', label: 'Low-E Glass' }
+                            ]} />
+                            <InputField label="# of Occupants" type="number" name="occupants" value={inputs.occupants} onChange={handleChange} />
+                        </div>
+                    )}
                     <Button onClick={calculateLoad} variant="secondary" className="mt-4"><Icon name="calculator" className="mr-2 h-4 w-4" />Calculate Load</Button>
                     {results && (
                         <div className="mt-6 border-t pt-4">
@@ -308,13 +326,98 @@
                 </Card>
             );
         };
+        
+        const DuctworkCalculator = ({ details, setDetails }) => {
+            const [ducts, setDucts] = useState([{ type: 'round', dim1: 8, dim2: '' }]);
+            const [totalCFM, setTotalCFM] = useState(0);
+            const AIR_VELOCITY = 700; // FPM
+
+            useEffect(() => {
+                calculateTotalCFM();
+            }, [ducts]);
+
+            const handleDuctChange = (index, field, value) => {
+                const newDucts = [...ducts];
+                newDucts[index][field] = value;
+                setDucts(newDucts);
+            };
+
+            const addDuct = () => {
+                setDucts([...ducts, { type: 'round', dim1: 8, dim2: '' }]);
+            };
+            
+            const removeDuct = (index) => {
+                const newDucts = ducts.filter((_, i) => i !== index);
+                setDucts(newDucts);
+            };
+
+            const calculateTotalCFM = () => {
+                let total = 0;
+                ducts.forEach(duct => {
+                    let area = 0;
+                    if (duct.type === 'round' && duct.dim1) {
+                        const radius = parseFloat(duct.dim1) / 2 / 12; // in feet
+                        area = Math.PI * radius * radius;
+                    } else if (duct.type === 'rectangular' && duct.dim1 && duct.dim2) {
+                        area = (parseFloat(duct.dim1) * parseFloat(duct.dim2)) / 144; // in sq feet
+                    }
+                    total += area * AIR_VELOCITY;
+                });
+                setTotalCFM(total);
+            };
+            
+            const requiredCFM = (parseFloat(details.systemSize) || 0) * 400;
+            const isAdequate = totalCFM >= requiredCFM;
+
+            return (
+                 <Card>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span> Ductwork CFM Calculator</h2>
+                    <div className="space-y-4">
+                        {ducts.map((duct, index) => (
+                            <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center bg-gray-50 p-2 rounded-md">
+                                <SelectField name="type" value={duct.type} onChange={e => handleDuctChange(index, 'type', e.target.value)} options={[{value: 'round', label: 'Round'}, {value: 'rectangular', label: 'Rectangular'}]} />
+                                {duct.type === 'round' ? (
+                                    <InputField type="number" name="dim1" value={duct.dim1} onChange={e => handleDuctChange(index, 'dim1', e.target.value)} placeholder="Diameter (in)" />
+                                ) : (
+                                    <>
+                                        <InputField type="number" name="dim1" value={duct.dim1} onChange={e => handleDuctChange(index, 'dim1', e.target.value)} placeholder="Width (in)" />
+                                        <InputField type="number" name="dim2" value={duct.dim2} onChange={e => handleDuctChange(index, 'dim2', e.target.value)} placeholder="Height (in)" />
+                                    </>
+                                )}
+                                <Button onClick={() => removeDuct(index)} variant="secondary" className="bg-red-100 text-red-600 hover:bg-red-200"><Icon name="trash" /></Button>
+                            </div>
+                        ))}
+                    </div>
+                    <Button onClick={addDuct} variant="secondary" className="mt-4"><Icon name="plus" className="mr-2 h-4 w-4" />Add Duct</Button>
+                    {requiredCFM > 0 && (
+                        <div className="mt-6 border-t pt-4 text-center">
+                             <h3 className="text-lg font-semibold mb-2">Ductwork Analysis</h3>
+                             <div className="grid grid-cols-2 gap-4">
+                                 <div>
+                                     <p className="text-sm text-gray-500">Required CFM</p>
+                                     <p className="text-2xl font-bold">{requiredCFM.toFixed(0)}</p>
+                                 </div>
+                                  <div>
+                                     <p className="text-sm text-gray-500">Existing Ductwork CFM</p>
+                                     <p className={`text-2xl font-bold ${isAdequate ? 'text-green-600' : 'text-red-600'}`}>{totalCFM.toFixed(0)}</p>
+                                 </div>
+                             </div>
+                             <p className={`mt-4 text-sm font-medium ${isAdequate ? 'text-green-700' : 'text-red-700'}`}>
+                                 {isAdequate ? 'Existing ductwork appears to be adequately sized.' : 'Warning: Existing ductwork may be undersized for the selected system.'}
+                             </p>
+                        </div>
+                    )}
+                </Card>
+            );
+        };
+
 
         const ProposalDisplay = ({ packages, onPrint, isGeneratingPdf }) => {
             if (packages.length === 0) return null;
             return (
                 <div id="proposalSection">
                     <Card>
-                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span> Your Custom Proposal</h2>
+                        <h2 className="text-xl font-bold text-gray-800 mb-2 flex items-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">7</span> Your Custom Proposal</h2>
                         <p className="text-gray-600 mb-6">Here are three tailored options. Select one to generate a printable quote.</p>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {packages.map((pkg, index) => (
@@ -754,8 +857,9 @@
                             <Addons selectedAddons={details.addons} onAddonToggle={handleAddonToggle} addonsData={equipmentData.accessories} />
                             <PhotoUploader photos={details.photos} setDetails={setDetails} />
                             <ManualJCalculator onTonnageCalculated={handleTonnageCalculated} />
+                            <DuctworkCalculator details={details} setDetails={setDetails} />
                             <Card className="text-center">
-                                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span> Generate Proposal</h2>
+                                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center"><span className="bg-blue-100 text-blue-700 rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">6</span> Generate Proposal</h2>
                                 <Button onClick={handleGeneratePackages} className="btn-lg"><Icon name="settings" className="mr-2 h-5 w-5" />Build System Options</Button>
                             </Card>
                             <ProposalDisplay packages={packages} onPrint={handlePrint} isGeneratingPdf={isGeneratingPdf} />
