@@ -132,6 +132,7 @@
                             { value: 'furnace_ac', label: 'Furnace & AC' },
                             { value: 'heatpump_airhandler', label: 'Heat Pump & Air Handler' },
                             { value: 'airhandler_ac', label: 'Air Handler & AC' },
+                            { value: 'ductless', label: 'Ductless Mini-Split' },
                             { value: 'ac_only', label: 'AC Only' },
                             { value: 'furnace_only', label: 'Furnace Only' },
                         ]} />
@@ -557,6 +558,32 @@
                     {"item": "EVD4X48M21A", "size": 4, "price": 958.54},
                     {"item": "EVD4X60M24A", "size": 5, "price": 1099.37}
                 ],
+                 "ductless": {
+                    "condensers_lh": [
+                        { "item": "37MARAQ36AA3", "desc": "LH Condenser Heat Pump 36mbh", "size": 3, "price": 3145.33 },
+                        { "item": "37MARAQ30AA3", "desc": "LH Condenser Heat Pump 30mbh", "size": 2.5, "price": 2852.67 },
+                    ],
+                    "condensers_hh": [
+                        { "item": "37MAHAQ33AA3", "desc": "HH Condenser Heat Pump 33mbh", "size": 2.75, "price": 3264.67 },
+                        { "item": "37MAHAQ24AA3", "desc": "HH Condenser Heat Pump 24mbh", "size": 2, "price": 2369.33 },
+                        { "item": "37MAHAQ18AA3", "desc": "HH Condenser Heat Pump 18mbh", "size": 1.5, "price": 1805.33 },
+                        { "item": "37MAHAQ12AA3", "desc": "HH Condenser Heat Pump 12mbh", "size": 1, "price": 1438.00 },
+                        { "item": "37MAHAQ09AA3", "desc": "HH Condenser Heat Pump 9mbh", "size": 0.75, "price": 1386.67 }
+                    ],
+                    "wall_units": [
+                        { "item": "D5MPHAQ18XA3", "desc": "HP Wall Unit 18mbh", "size": 1.5, "price": 954.00 },
+                        { "item": "D5MPHAQ12XA3", "desc": "HP Wall Unit 12mbh", "size": 1, "price": 796.67 },
+                        { "item": "D5MPHAQ09XA3", "desc": "HP Wall Unit 9mbh", "size": 0.75, "price": 748.00 },
+                        { "item": "D5MPHAQ06XA3", "desc": "HP Wall Unit 6mbh", "size": 0.5, "price": 701.33 },
+                        { "item": "D5MAHAQ36XA3", "desc": "HP Wall Unit 36mbh", "size": 3, "price": 1231.33 },
+                        { "item": "D5MAHAQ30XA3", "desc": "HP Wall Unit 30mbh", "size": 2.5, "price": 1118.00 },
+                        { "item": "D5MAHAQ24XA3", "desc": "HP Wall Unit 24mbh", "size": 2, "price": 891.33 },
+                        { "item": "D5MAHAQ18XA3", "desc": "HP Wall Unit 18mbh", "size": 1.5, "price": 712.00 },
+                        { "item": "D5MAHAQ12XA3", "desc": "HP Wall Unit 12mbh", "size": 1, "price": 599.33 },
+                        { "item": "D5MAHAQ09XA3", "desc": "HP Wall Unit 9mbh", "size": 0.75, "price": 566.00 },
+                        { "item": "D5MAHAQ06XA3", "desc": "HP Wall Unit 6mbh", "size": 0.5, "price": 552.67 }
+                    ]
+                },
                 "accessories": {
                     "thermostat": {"item": "SYST0101CW", "desc": "Ion Wall Control WiFi Touchscreen", "price": 747.21},
                     "humidifier": { "item": "HUMXX", "desc": "Whole-Home Humidifier", "price": 850.00 },
@@ -612,6 +639,13 @@
                              { title: "Performance Electric Heat", level: "Good", color: "gray", items: [findClosest(equipmentData.ac['1-stage-16'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage)], features: ["Reliable All-Electric System", "Standard Efficiency", "Budget-Friendly"] },
                              { title: "Comfort Series Electric Heat", level: "Better", color: "blue", items: [findClosest(equipmentData.ac['2-stage'], tonnage), findClosest(equipmentData.fanCoils['ecm-5-speed'], tonnage), thermostat], features: ["Enhanced Comfort & Dehumidification", "Higher Energy Savings", "Advanced Control"] },
                              { title: "Ion Ultimate Electric Heat", level: "Best", color: "indigo", items: [findClosest(equipmentData.ac['variable-speed'], tonnage), findClosest(equipmentData.fanCoils.communicating, tonnage), thermostat], features: ["Maximum Energy Savings", "Ultimate Comfort Control", "Whisper-Quiet Performance", "Smart Communicating System"] }
+                        ];
+                        break;
+                    case 'ductless':
+                        newPackages = [
+                            { title: "Ductless HH Series", level: "Good", color: "gray", items: [findClosest(equipmentData.ductless.condensers_hh, tonnage), findClosest(equipmentData.ductless.wall_units, tonnage)], features: ["Efficient Point-of-Use Heating & Cooling", "Great for Additions or Problem Areas", "Standard Efficiency"] },
+                            { title: "Ductless LH Series", level: "Better", color: "blue", items: [findClosest(equipmentData.ductless.condensers_lh, tonnage), findClosest(equipmentData.ductless.wall_units, tonnage)], features: ["Superior Low-Temp Heating Performance", "Higher Efficiency", "Ideal for Colder Climates"] },
+                            { title: "Ductless Premium LH", level: "Best", color: "indigo", items: [findClosest(equipmentData.ductless.condensers_lh, tonnage), findClosest(equipmentData.ductless.wall_units, tonnage), thermostat], features: ["Top-Tier Low-Temp Performance", "Maximum Energy Savings", "Advanced Smart Control"] }
                         ];
                         break;
                     case 'ac_only':
